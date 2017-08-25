@@ -1,0 +1,9 @@
+*.opsi
+*.zsync
+*.md5
+*.ins~
+*~
+*.exe
+*.log
+BUILD/
+PACKAGES/

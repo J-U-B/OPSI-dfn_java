@@ -1,0 +1,47 @@
+#! /bin/bash
+#===================================================================
+# preinst script for softprod
+# This script executes before that package will be unpacked from its archive file.
+#
+# The following environment variables can be used to obtain information about the current installation:
+#   PRODUCT_ID: id of the current product
+#   CLIENT_DATA_DIR: directory where client data will be installed
+#===================================================================
+# J. Boettge <boettge@mpi-halle.mpg.de>  2017-07-25 13:15:28 +0200
+#=====================================================================
+
+LOGFILE=/tmp/${PRODUCT_ID}__opsi_package_install.log
+
+exec > $LOGFILE
+exec 2>&1
+chgrp opsiadmin $LOGFILE
+chmod g+rw $LOGFILE
+
+echo "=================================================="
+echo "${PRODUCT_ID} PREINST LOG"
+echo "=================================================="
+
+TMP_DIR=${CLIENT_DATA_DIR}/../${PRODUCT_ID}.tmp
+
+if [ -d $TMP_DIR ]; then
+	echo "Temporary directory $TMP_DIR already exist, aborting!"
+	exit 1
+fi
+
+[ ! -d $CLIENT_DATA_DIR ] && exit 0
+mkdir $TMP_DIR
+
+echo "Saving previous directories..."
+for DIRNAME in custom files; do
+	path=$CLIENT_DATA_DIR/${DIRNAME}
+	echo "* [${path}]"
+	if [ -e $path -a ! -h ${path} ]; then
+		echo -e "\tmoving ${path} to ${TMP_DIR}"
+		mv ${path} ${TMP_DIR}/ || exit 2
+	else
+		echo -e "\tdoes not exist or is a symlink"
+	fi
+done
+
+exit 0
+

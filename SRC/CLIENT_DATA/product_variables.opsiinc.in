@@ -1,0 +1,242 @@
+;=====================================================================
+; product specific variables
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 15:21:19 +0200
+;=====================================================================
+include_insert "%ScriptPath%\variables.opsiinc"
+include_append "%ScriptPath%\exitcode_msi.opsiinc"
+
+Set $MAP$ 				= getProductMap
+Set $FullProductId$     = getValue("id", $MAP$)
+Set $ProductName$   	= getValue("name", $MAP$)
+Set $Version$       	= getValue("ProductVersion", $MAP$)
+Set $SystemType$    	= GetSystemType
+Set $NTVersion$   		= GetMsVersionInfo
+
+;-----------------------------------------------------------
+;*** basic requirements
+;-----------------------------------------------------------
+requiredWinstVersion >= "4.11.6"
+
+if not ($NTVersion$ >= "6.1")
+	LogError "OS is not Windows 7 or above"
+	isFatalError
+endif
+
+if not ($SystemType$ = "64 Bit System")
+	LogError "OS is not a 64 Bit System"
+	isFatalError
+endif
+
+;*** simplify SystemType
+Switch $SystemType$
+	case "64 Bit System"
+		Set $SystemType$ = "x64"
+	endCase
+	case "x86 System"
+		Set $SystemType$ = "x32"
+	endCase
+	defaultCase
+		Set $SystemType$ = ""
+	endCase
+endSwitch
+
+;-----------------------------------------------------------
+;*** get LogLevel from property
+;-----------------------------------------------------------
+Set $LogLevelDefault$ = GetProductProperty("log_level","default")
+
+;-----------------------------------------------------------
+;*** detect testing package:
+;-----------------------------------------------------------
+if (strPos($FullProductId$, "0_") = "0") and (strPos($FullProductId$, "test_") = "0")
+	; no a testing package
+	set $ProductId$  		= $FullProductId$ 
+	set $Testing$ 			= "false"
+	if ($LogLevelDefault$ = "default")
+		set $LogLevelDefault$  	= "{{DEFAULT_RELEASE_LOGLEVEL}}"
+	endif
+else
+	; this is a testing package
+	comment "Prefix for testing package detected"
+	set $ProductId$  		= strPart($FullProductId$, calculate(strPos($FullProductId$,"_") + "+1"), strLength($FullProductId$))
+	set $Testing$ 			= "true"
+	if ($LogLevelDefault$ = "default")
+		set $LogLevelDefault$  	= "{{DEFAULT_TESTING_LOGLEVEL}}"
+	endif
+endif
+setlogLevel 				= $LogLevelDefault$
+
+;-----------------------------------------------------------
+;*** detect DFN package:
+;-----------------------------------------------------------
+if strPos($FullProductId$, "dfn_") = "0"
+	set $isDFN$ = "false"
+	set $StrippedProductId$ = $ProductId$
+else
+	set $isDFN$ = "true"
+	set $StrippedProductId$ = strPart($ProductId$,"5",strLength($ProductId$))
+endif
+
+;-----------------------------------------------------------
+;*** software architecture; valid values: "32 bit", "64 bit", "sysnative", "both"
+;-----------------------------------------------------------
+Set $sw_arch$ = GetProductProperty("install_architecture","sysnative")
+Set $sw_arch$ = takeString(0, splitString($sw_arch$, " "))
+Set $InstallBase64$ = "%ProgramFiles64Dir%"
+Set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+
+if ( $sw_arch$ = "sysnative" )
+	if ($SystemType$ = "x64")
+		Set $sw_arch$ = "64"
+	else
+		Set $sw_arch$ = "32"
+	endif
+endif
+
+if ( $sw_arch$ = "both" )
+	if ($SystemType$ = "x64")
+		Set $sw_arch$ = "32+64"
+	else
+		Set $sw_arch$ = "32"
+	endif
+endif
+
+Switch $sw_arch$
+	case "64"
+		; 64 bit software
+		set $InstallBase64$ = "%ProgramFiles64Dir%"
+		set $InstallBase$	= $InstallBase64$
+	endcase
+	case "32"
+		; 32 bit software
+		set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		set $InstallBase$	= $InstallBase32$
+	endcase
+	case "32+64"
+		set $InstallBase64$ = "%ProgramFiles64Dir%"
+		set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		set $InstallBase$ 	= ""
+	endcase
+EndSwitch
+
+
+{{#ifdef_property_language}}
+;-----------------------------------------------------------
+;*** language property: "de, "en_US", "en_GB"
+;-----------------------------------------------------------
+Set $sw_lang$ = GetProductProperty("default_language","en_US")
+{{/ifdef_property_language}}
+
+{{#ifdef_property_desktop_link}}
+;-----------------------------------------------------------
+;*** create desktop link?
+;-----------------------------------------------------------
+Set $sw_DesktopLink$ = GetProductProperty("DesktopLink","False")
+{{/ifdef_property_desktop_link}}
+
+;-----------------------------------------------------------
+;*** post install/uninstall properties:
+;-----------------------------------------------------------
+set $CustomPostInstall$ 	= getProductProperty("custom_post_install","none")
+set $CustomPostUninstall$ 	= getProductProperty("custom_post_uninstall","none")
+
+;-----------------------------------------------------------
+;*** registry paths:
+;-----------------------------------------------------------
+Set $RegPathUninstall$	 = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+Set $RegPathUninstall64$ = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+Set $RegPathUninstall32$ = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+
+;-----------------------------------------------------------
+;*** logs
+;-----------------------------------------------------------
+Set $LogDir$             = "%SystemDrive%\tmp"
+Set $InstallLog$  		 = $LogDir$ + "\"+$FullProductId$+"_install.log"
+Set $UninstallLog$     	 = $LogDir$ + "\"+$FullProductId$+"_uninstall.log"
+
+;-----------------------------------------------------------
+;*** additional paths, binaries, and booleans
+;-----------------------------------------------------------
+Set $TempDir$			= "%opsiTmpDir%"
+set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail.exe"
+set $GETREALNAME$		= "%ScriptPath%\bin\GetRealName.exe"
+set $SEVENZIP$			= "%ScriptPath%\bin\7z.exe"
+; changed to "true" on running sub_checkinstance_init:
+set $bCheckInstance$ 	= "false"
+; changed to "true" on init if $PSDETAIL$ exists:		
+set $bPSDetail$			= "false"		
+
+;-----------------------------------------------------------
+;*** images
+;-----------------------------------------------------------
+; set $Img_BaseName$ = $StrippedProductId$
+set $Img_BaseName$ = "java"
+if ($isDFN$ = "true")
+	set $Img_Install$		= "%ScriptPath%\images\" + $Img_BaseName$ +"_install_dfn.png"
+else
+	set $Img_Install$		= "%ScriptPath%\images\" + $Img_BaseName$ +"_install.png"
+endif
+set $Img_Prepare$			= "%ScriptPath%\images\" + $Img_BaseName$ +"_prepare.png"
+set $Img_Install_Custom$	= "%ScriptPath%\images\" + $Img_BaseName$ +"_install_custom.png"
+set $Img_Addons$			= "%ScriptPath%\images\" + $Img_BaseName$ +"_addons.png"
+set $Img_Update$			= "%ScriptPath%\images\" + $Img_BaseName$ +"_update.png"
+set $Img_Uninstall$			= "%ScriptPath%\images\" + $Img_BaseName$ +"_uninstall.png"
+set $Img_Uninstall_Custom$	= "%ScriptPath%\images\" + $Img_BaseName$ +"_uninstall_custom.png"
+
+ShowBitmap $Img_Prepare$ $ProductName$
+
+
+;===================================================================
+;*** product specific settings
+;===================================================================
+Set $InstallerType$	= "Oracle/MSI"
+Set $SrcDir$		= "%ScriptPath%\files\" 
+Set $PathPrefix$	= "Java\"
+;Set $ProductDir$	= $PathPrefix$ + stringReplace($ProductName$," ","")
+Set $ProductDir$	= $PathPrefix$ + $StrippedProductId$
+Set $JAVA_VER$		= "{{JAVA_VER}}"
+; Set $MainBin$      	= "bin\" + $StrippedProductId$ +".exe"
+Set $MainBin$      	= "bin\javaw.exe"
+
+{{#ifdef_property_jre}}
+Set $JRE_INSTALLER_32$	= "jre-{{JAVA_VER}}-windows-i586.exe"
+Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}-windows-x64.exe"
+Set $MinimumSpace$ 		= "200 MB"
+{{/ifdef_property_jre}}
+{{#ifdef_property_jdk}}
+Set $JDK_INSTALLER_32$	= "jdk-{{JAVA_VER}}-windows-i586.exe"
+Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}-windows-x64.exe"
+Set $MinimumSpace$ 		= "1000 MB"
+{{/ifdef_property_jdk}}
+
+; JRE x32: 		165 MB
+; JRE x64: 		185 MB
+; JDK x32:		~500 MB
+; JDK x64:		~ 500 MB
+; Docs:			365 MB
+; Demos x32:	 56 MB
+; Demos x64:	 82 MB
+
+
+Set $JAVASETTINGSCFG$ = EnvVar("AllUsersProfile") + "\Oracle\Java\java.settings.cfg"
+
+Set $bWEBJAVA$ = GetProductProperty("WEB_JAVA", "Disabled")
+Set $JDK_FEATURES$ = 'ADDLOCAL="ToolsFeature,SourceFeature"'
+;*** JRE is not required, so it won't be installed:
+;Set $JDK_FEATURES$ = 'ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature"'
+;*** for PublicjreFeature also "/INSTALLDIRPUBJRE=..." is needed! (note the leading "/")
+
+Set $Inst_Opts_JRE$	= " INSTALL_SILENT=1 STATIC=1 AUTO_UPDATE=0 REMOVEOUTOFDATEJRES=0 WEB_ANALYTICS=0 WEB_JAVA=" + $bWEBJAVA$ + " /LV* " + $InstallLog$ 
+Set $Inst_Opts_JDK$	= $Inst_Opts_JRE$ + " " + $JDK_FEATURES$
+
+Set $SearchPattern_JRE$	   = "Java 8 Update"
+Set $SearchPattern_JDK$	   = "Java SE Development Kit 8 Update"
+
+
+;===================================================================
+;*** other/obsolete
+;===================================================================
+Set $ExDir$			= $ProductName$ + "-bin"
+Set $ExDirLong$		= "%opsiTmpDir%\" + $ProductName$ + "-bin\"
+Set $Archive$		= $ProductName$ + "." + $Version$ + ".x" + $sw_arch$ + ".7z"
+

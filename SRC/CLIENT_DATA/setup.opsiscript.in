@@ -1,0 +1,187 @@
+;======================================================================
+; setup.ins JAVA
+; Installer-Typ: Oracle/MSI
+; 
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 16:14:35 +0200
+;======================================================================
+
+;======================================================================
+[Initial]
+;======================================================================
+setLogLevel=5
+; Log Errors in Logfile but don't abort:
+ExitOnError=true
+; Show syntax errors in the script:
+ScriptErrorMessages=off
+; Dont trace step by step through the script: 
+TraceMode=off 
+; Let started programs run in front of the winst window
+StayOnTop=false 
+
+;======================================================================
+[Actions]
+;======================================================================
+include_insert "%ScriptPath%\product_variables.opsiinc"
+
+
+;=== Check free space
+if not(HasMinimumSpace ("%SystemDrive%", $MinimumSpace$))
+	LogError "Not enough space on %SystemDrive%, " + $MinimumSpace$ + " on drive %SystemDrive% needed for " + $ProductId$
+	isFatalError
+else
+	;=== remove previous installation
+	if FileExists("%ScriptPath%\delsub.opsiinc")
+		comment  "Starting uninstall sub section"
+		include_append "%ScriptPath%\delsub.opsiinc"
+		sub_delsub_main
+	else
+		logError "Can't find uninstaller script"
+		isFatalError "delsub.opsiinc not found"
+	endif	
+	
+	if FileExists($InstallLog$)
+		Files_delInstallLog
+	endif
+	
+	if not(FileExists($JAVASETTINGSCFG$))
+		PatchTextFile_javasettingscfg  "$JAVASETTINGSCFG$"
+	endif
+	
+	;=== Start the installation
+	ShowBitmap $Img_Install$ $ProductName$
+	Message "Installing " + $ProductName$ + " " + $Version$
+	marktime	
+		
+	if contains($sw_arch$,"32")
+		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
+	
+		{{#ifdef_property_jre}}
+			message "Installing JRE " + $Version$ + " (32 bit)"
+			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_32$
+			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
+			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
+			
+			Sub_Install
+		{{/ifdef_property_jre}}
+		
+		{{#ifdef_property_jdk}}
+			message "Installing JDK " + $Version$ + " (32 bit)"
+			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_32$
+			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
+			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
+			
+			Sub_Install	
+			
+			;***** ToDo: Documentation, Demos *****	
+		{{/ifdef_property_jdk}}
+	
+	endif
+	
+	if contains($sw_arch$,"64")
+		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
+	
+		{{#ifdef_property_jre}}
+			message "Installing JRE " + $Version$ + " (64 bit)"
+			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_64$
+			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
+			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
+			
+			Sub_Install
+		{{/ifdef_property_jre}}
+		
+		{{#ifdef_property_jdk}}
+			message "Installing JDK " + $Version$ + " (64 bit)"
+			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_64$
+			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
+			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
+						
+			Sub_Install	
+			
+			;***** ToDo: Documentation, Demos *****		
+		{{/ifdef_property_jdk}}
+	
+	endif	
+	
+		
+	;=== disable JAVA auto update
+	Registry_disable_update	
+
+	
+	;=== custom post install
+	comment "include custom post install file"
+	if not ($CustomPostInstall$ = "none")
+		if FileExists("%ScriptPath%\custom\" + $CustomPostInstall$)
+			ShowBitmap $Img_Install_Custom$ $ProductName$
+			include_insert "%ScriptPath%\custom\" + $CustomPostInstall$
+			ShowBitmap $Img_Install$ $ProductName$
+		endif
+	endif
+	
+
+	;=== measure installation time
+	set $TimeDiff$ = getDiffTimeSec
+	Message  "Setup time: " + $TimeDiff$ + " seconds"	
+	
+endif
+
+
+;=====================================================================
+[Sub_Install]
+;=====================================================================
+if not (FileExists($INSTALLER$))
+	logError "Installer not found: [" + $INSTALLER$ + "]"
+	isFatalError
+endif		
+Winbatch_Install
+sub_check_exitcode_msi
+
+;-----------------------------------------------------------
+;*** get real name for main binary
+;-----------------------------------------------------------
+if not(FileExists($GETREALNAME$))
+	logError "Can't find [" + $GETREALNAME$ + "]"
+	set $program_real$ = ""
+else
+	set $OutStream$ = ShellCall($GETREALNAME$+' "' + $InstallDir$ + "\" + $MainBin$ + '"')
+	if ( count ($OutStream$) = "0" )
+		logError "Binary not found: ["+ $InstallDir$ + "\" + $MainBin$ + "]
+	else
+		set $program_real$  = takeString(0, $OutStream$)
+		comment "GetRealName for [" + $InstallDir$ + "\" + $MainBin$ + "] returns [" + $program_real$ + "]"
+		
+		message "Configuring Windows Firewall for Java"			
+		ShellInAnIcon_FW_JAVA
+	endif
+endif	
+
+
+;=====================================================================
+[Winbatch_Install]
+;=====================================================================
+"$INSTALLER$" INSTALLDIR="$InstallDir$" $INSTALL_OPTIONS$ 
+ 
+ 
+;=====================================================================
+[ShellInAnIcon_FW_JAVA]
+;=====================================================================
+netsh advfirewall firewall add rule name="Java8" dir=in action=block program="$program_real$" description="Blocking javaw.exe"
+
+ 
+;=====================================================================
+[Files_delInstallLog]
+;=====================================================================
+del -f "$InstallLog$"
+
+
+;=====================================================================
+[PatchTextFile_javasettingscfg]
+;=====================================================================
+SaveToFile "$JAVASETTINGSCFG$"
+
+
+;=====================================================================
+[Registry_disable_update]
+;=====================================================================
+OpenKey [HKEY_LOCAL_MACHINE\SOFTWARE\JavaSoft\Java Update\Policy]
+Set "EnableJavaUpdate"=REG_DWORD:0
+

@@ -1,0 +1,102 @@
+;======================================================================
+; variables.ins
+; This file contains all possible variables, excluding the opsi-system
+; variables, for the opsi-winst scripts in use.
+;
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 12:18:38 +0200
+;======================================================================
+
+DefStringList $Applications$
+DefStringList $MAP$
+DefStringList $OutStream$
+DefStringList $ResultList$
+DefStringList $TempList$
+
+DefVar $Archive$
+DefVar $bCheckInstance$
+DefVar $bKillRunning
+DefVar $bPSDetail$
+DefVar $bWEBJAVA$
+DefVar $CheckProcess$
+DefVar $currentLogLevel$
+DefVar $CustomPostInstall$
+DefVar $CustomPostUninstall$
+DefVar $DisplayName$
+DefVar $ErrorMsg$
+DefVar $ExDir$
+DefVar $ExDirLong$
+DefVar $ExitCode$
+DefVar $FullProductId$
+DefVar $GETREALNAME$
+DefVar $Img_Addons$
+DefVar $Img_BaseName$
+DefVar $Img_Install$
+DefVar $Img_Install_Custom$
+DefVar $Img_Prepare$
+DefVar $Img_Uninstall$	
+DefVar $Img_Uninstall_Custom$
+DefVar $Img_Update$
+DefVar $InstallBase$
+DefVar $InstallBase32$
+DefVar $InstallBase64$
+DefVar $InstallDir$
+DefVar $INSTALLER$
+DefVar $InstallLog$
+DefVar $InstallerType$
+DefVar $INSTALL_OPTIONS$
+DefVar $Inst_Loc$
+DefVar $Inst_Opts_JDK$
+DefVar $Inst_Opts_JRE$
+DefVar $Inst_Ver$
+DefVar $isDFN$
+DefVar $JAVASETTINGSCFG$
+DefVar $JAVA_VER$
+DefVar $JDK_FEATURES$
+DefVar $JDK_INSTALLER_32$
+DefVar $JDK_INSTALLER_64$
+DefVar $JRE_INSTALLER_32$
+DefVar $JRE_INSTALLER_64$
+DefVar $Kill_Running$
+DefVar $LogDir$
+DefVar $LogLevelDefault$
+DefVar $MainBin$
+DefVar $MinimumSpace$
+DefVar $NTVersion$
+DefVar $PathPrefix$
+DefVar $Proc_Cnt$
+DefVar $Proc_Killed$
+DefVar $ProductDir$
+DefVar $ProductId$
+DefVar $ProductName$
+DefVar $program_real$
+DefVar $PSDETAIL$
+DefVar $PSDETAIL_MODE$
+DefVar $RegKey$
+DefVar $RegKeyPath$
+DefVar $RegPathUninstall$
+DefVar $RegPathUninstall32$
+DefVar $RegPathUninstall64$
+DefVar $RegProductID$
+DefVar $RegSearchOpts$
+DefVar $SearchPattern$
+DefVar $SearchPattern_JDK$
+DefVar $SearchPattern_JRE$
+DefVar $SEVENZIP$
+DefVar $SrcDir$
+DefVar $StrippedProductId$
+DefVar $sw_arch$
+DefVar $sw_DesktopLink$
+DefVar $sw_lang$
+DefVar $SystemType$
+DefVar $TempDir$
+DefVar $Testing$
+DefVar $TimeDiff$
+DefVar $UninstallLog$
+DefVar $UninstallString$
+DefVar $Uninst_Arch$
+DefVar $Uninst_ID$
+DefVar $Uninst_RegDir$
+DefVar $Version$
+
+
+

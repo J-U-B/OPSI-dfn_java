@@ -1,0 +1,296 @@
+[Package]
+version: {{O_PKG_VER}}
+depends: 
+incremental: False
+
+[Product]
+type: localboot
+{{! ==== now it becomes a little bit confusing... ====================}}
+{{! !}}
+{{#ifdef_property_jre}}
+	{{#ifdef_property_jdk}}
+{{! ---------- JRE und JDK -------------------------------------------}}
+id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JAVA}}
+name: Java Runtime Environment and Devlopment Kit v8
+description: Runtime Environment (JRE) and Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
+{{! ------------------------------------------------------------------}}
+	{{/ifdef_property_jdk}}
+	{{^ifdef_property_jdk}}
+{{! ---------- JRE ---------------------------------------------------}}
+id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JRE}}
+name: Java Runtime Environment
+description: Runtime Environment (JRE) for the Java Platform, Standard Edition (Java SE)
+{{! ------------------------------------------------------------------}}
+	{{/ifdef_property_jdk}}
+{{/ifdef_property_jre}}
+{{^ifdef_property_jre}}
+	{{#ifdef_property_jdk}}
+{{! ---------- JDK ---------------------------------------------------}}
+id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JDK}}
+name: Java Devlopment Kit v8
+description: Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
+{{! ------------------------------------------------------------------}}
+	{{/ifdef_property_jdk}}
+{{/ifdef_property_jre}}
+{{! !}}
+{{! ==================================================================}}
+ WebSite: http://www.oracle.com/technetwork/java/javase/downloads
+advice: Maintainer: Jens Boettge <boettge@mpi-halle.mpg.de>
+ Organization: {{ORGNAME}}
+ Release date: {{O_RELEASE_DATE}}
+version: {{O_SOFTWARE_VER}}
+priority: 0
+licenseRequired: False
+productClasses: 
+setupScript: setup.opsiscript
+uninstallScript: uninstall.opsiscript
+updateScript: 
+alwaysScript: 
+onceScript: 
+customScript: 
+userLoginScript: 
+
+[ProductProperty]
+type: unicode
+name: install_architecture
+multivalue: False
+editable: False
+description: which architecture (32/64 bit) should be installed
+values: ["32 bit", "64 bit", "both", "sysnative"]
+default: ["sysnative"]
+
+{{#ifdef_property_language}}
+[ProductProperty]
+type: unicode
+name: default_language
+multivalue: False
+editable: False
+description: application default language
+values: ["de", "en-GB", "en-US"]
+default: ["en-US"]
+{{/ifdef_property_language}}
+
+{{#ifdef_property_jre}}
+[ProductProperty]
+type: bool
+name: install_jre
+description: Install Java Runtime Environment
+default: True
+{{/ifdef_property_jre}}
+
+{{#ifdef_property_jdk}}
+[ProductProperty]
+type: bool
+name: install_jdk
+description: Install Java SE Developemnt Kit
+{{! --- set default only to true, if JRE  is not enabled ---}}
+{{#ifdef_property_jre}}
+default: False
+{{/ifdef_property_jre}}
+{{^ifdef_property_jre}}
+default: True
+{{/ifdef_property_jre}}
+
+[ProductProperty]
+type: bool
+name: install_jdk_doc
+description: Install Java SE Development Kit Documentation (only available for JDK)
+default: False
+
+{{#ifdef_property_jdk_adds}}
+[ProductProperty]
+type: bool
+name: install_javafx_doc
+description: Install JavaFX API Documentation (only available for JDK)
+default: False
+
+[ProductProperty]
+type: bool
+name: install_demos
+description: Install Java SE Development Kit Demos and Samples (only available for JDK)
+default: False
+{{/ifdef_property_jdk_adds}}
+{{/ifdef_property_jdk}}
+
+
+[ProductProperty]
+type: unicode
+name: web_java
+multivalue: False
+editable: False
+description: Allow Java applets in web browser?
+values: ["Disable", "Enable"]
+default: ["Disable"]
+
+[ProductProperty]
+type: unicode
+name: custom_post_install
+multivalue: False
+editable: True
+description: Define filename for include script in custom directory after installation
+values: ["custom_test.opsiinc", "none", "post-install.opsiinc"]
+default: ["none"]
+
+[ProductProperty]
+type: unicode
+name: custom_post_uninstall
+multivalue: False
+editable: True
+description: Define filename for include script in custom directory after deinstallation
+values: ["custom_test.opsiinc", "none", "post-uninstall.opsiinc"]
+default: ["none"]
+
+[ProductProperty]
+type: unicode
+name: log_level
+multivalue: False
+editable: False
+{{#ifdef_testing}}
+description: Loglevel for this package ({{DEFAULT_TESTING_LOGLEVEL}})
+{{/ifdef_testing}}
+{{^ifdef_testing}}
+description: Loglevel for this package ({{DEFAULT_RELEASE_LOGLEVEL}})
+{{/ifdef_testing}}
+values: ["default", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+default: ["default"]
+
+{{#ifdef_property_kill_running}}
+[ProductProperty]
+type: bool
+name: kill_running
+description: kill running instance (for software on_demand)
+default: False
+
+[ProductProperty]
+type: unicode
+name: kill_applic
+multivalue: True
+editable: True
+description: Instead of killing java only, kill (also) these running applications; not affected by "kill_running"
+values: [""]
+default: [""]
+{{/ifdef_property_kill_running}}
+
+
+[Changelog]
+java8-{{O_SOFTWARE_VER}}-{{O_PKG_VER}} {{STAGE}}:
+	* package update to 8.0.144.01
+	* package support for JRE and JDK
+	* new: License GPLv3
+	* new: documentation in readme.md
+	* preparation for DFN package:
+		* preinst/postinst
+		* custom script support
+		* auto download of packages
+	* new properties:
+		* install_jre
+		* install_jdk
+		* install_demos					<-- not implemented yet -->
+		* install_jdk_doc				<-- not implemented yet -->
+		* install_javafx_doc			<-- not implemented yet -->
+		* custom_post_install
+		* custom_post_uninstall
+		* kill_running
+		* kill_applic
+	* images moved to subfolder, new icon set
+	* scripts renamed: *.ins -> *.opsiscript, *.opsiinc
+	* scripts extensive rewritten:
+		* setup.opsiscript(.in)
+		* delsub.opsiinc(*.in)
+		* product_variables.opsiinc(.in)
+		* variables.opsiinc
+		* checkinstance.opsiinc(.in)
+		* exit_code_msi.opsiinc
+	* updated:
+		* uninst_section_search.opsiinc
+		* uninstall.opsiscript
+		* checkvars.sh
+	* Changes which are not a part of the built package but the source:
+		* Makefile (check "make help")
+		* spec.json (variables for building packages)
+		* using templates from SRC to generate package scripts in BUILD
+		* using template engine pystache
+		
+	{{#ToDo}}
+		* features to implement
+			* install documentation for JDK (property)
+			* install documentation for JavaFX (property)
+			* install demos and samples (property)
+			* properties: 
+				* patchjce 
+				* webjava-security_level
+				* java-updater
+				* updatebranch
+		* fixes:
+			*
+	{{/ToDo}}
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-08-24 16:14:02 +0200
+
+
+java8-8.0.1210.13-5 release:
+	* Product update -> jre8u121
+	* new: checkvars.sh
+	* new: uninst_section_search.inc
+	* revised delsub.ins
+	* variables.ins slimmed down
+	* changed script behaviour: ScriptErrorMessages=off, ExitOnError=true
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-01-26 12:14:11 +0100
+
+
+java8-8.0.1120.15-4 release:
+	* Product update -> jre8u112
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-10-21 08:16:35 +0200
+
+
+java8-8.0.1020.14-4 release:
+	* Fix Erkennung Architektur Uninstaller
+	* Erweiterung $UninstIDs$
+	* Optimierung setup.ins, delsub.ins
+	* Fix Anzeige Setup-Icon
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-26 10:47:43 +0200
+
+
+java8-8.0.1020.14-3 release:
+	* Property WEB_JAVA
+	* Verwendung EXE-Installer, Anpassung Optionen
+	* Erweiterung exitcodes_msi (-80)
+	* Fix java.settings.cfg
+	* Fix Erkennung Architektur Uninstaller
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-22 16:06:01 +0200
+
+
+java8-8.0.1020.14-2 release:
+	* Update -> jre8u102
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-21 13:57:12 +0200
+
+
+java8-8.0.920.14-2 testing:
+	* Update -> jre8u92
+	* Priority: -10 -> 0
+	* postinst angepasst fuer testing (Praefix 0_)
+	* Redesign delsub.ins
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-05-20 13:08:52 +0200
+
+
+java8-8.0.660.17-2:
+	* Update -> jre8u66
+	* Control: Website und Description angepasst
+	* delsub_older_versions.ins entfernt (File wird nicht verwendet)
+	* zusaetzliche Variablen in variables.ins: ProductKey und Version fuer aktuelle und alte Release
+	* Korrektur uninstall.ins
+	* Logfiles werden angehaengt (liwemo+)
+	* delsub.ins ueberarbeitet:
+		* Beruecksichtigung ProductProperty "install_architecture"
+		* nur letzte Vorversion wird vorerst beruecksichtigt
+		* explizites Loeschen des Uninstall-Registry-Keys
+	* Loeschen alter (Un)Install-Logs
+	* ProductProperty "install_architecture" um "sysnative" erweitert
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2015-10-21 14:00:27 +0200

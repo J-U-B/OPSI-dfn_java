@@ -1,0 +1,162 @@
+#! /bin/bash -x
+#=====================================================================
+# postinst script JAVA8
+# This script executes after unpacking files from that archive and registering the product at the depot.
+#
+# The following environment variables can be used to obtain information about the current installation:
+#   PRODUCT_ID: id of the current product
+#   CLIENT_DATA_DIR: directory which contains the installed client data
+#=====================================================================
+# J. Boettge <boettge@mpi-halle.mpg.de>  2017-07-28 13:30:14 +0200
+#=====================================================================
+
+{{#ifdef_auto_download}}
+AUTO_DOWNLOAD="true"
+{{/ifdef_auto_download}}
+{{^ifdef_auto_download}}
+AUTO_DOWNLOAD="false"
+{{/ifdef_auto_download}}
+
+
+LOGFILE=/tmp/${PRODUCT_ID}__opsi_package_install.log
+
+exec >> $LOGFILE
+exec 2>&1
+chgrp opsiadmin $LOGFILE
+chmod g+rw $LOGFILE
+
+echo "=================================================="
+echo "${PRODUCT_ID} POSTINST LOG"
+echo "=================================================="
+
+### check for testing and DFN package:
+P=${PRODUCT_ID}
+[ "${P}" = "${P##0_}" -a "${P}" = "${P##test_}" ] &&  IS_TESTING=false || IS_TESTING=true
+P=${P/#0_/}
+P=${P/#test_/}
+[ "${P}" = "${P##dfn_}" ] && IS_DFN=false || IS_DFN=true
+
+
+SRC="${CLIENT_DATA_DIR}/../../source/${PRODUCT_ID##0_}"
+DST="${CLIENT_DATA_DIR}/files"
+# remove trailing "/" in path:
+DST=${DST%\/}
+ERR=0
+
+
+if [ $IS_DFN == true ]; then
+	 [ ! -d "${DST}" ] && mkdir $DST
+else
+	### symlink files directory to ../../source/${PRODUCT_ID##0_} only
+	### for non-DFN packages:
+	if [ -h "${DST}" ]; then
+		echo "Symlink to [${DST}] already exists. - Replacing"
+		rm ${DST}
+	fi
+	
+	if [ ! -d "${SRC}" ]; then	
+		echo "Directory [${SRC}] does not exist. Try to create it."
+		mkdir -m 750 ${SRC} && chgrp pcpatch ${SRC}
+	fi
+
+	if [ -d "${DST}" ]; then
+		echo "Directory [${DST}] already exists!\nSkipping creation of symlink."
+	elif [ -f "${DST}" ]; then
+		echo "File [${DST}] already exists!\nSkipping creation of symlink."
+	else
+		ln -s ${SRC} ${DST}
+	fi
+fi
+
+
+### restore custom directories
+TMP_DIR=${CLIENT_DATA_DIR}/../${PRODUCT_ID}.tmp
+if [ -d $TMP_DIR ]; then
+	echo 'Restoring previous directories...'
+	
+	for DIRNAME in custom files; do
+		echo "* [${DIRNAME}]"
+		if [ -d $TMP_DIR/${DIRNAME} ]; then
+			test -e $CLIENT_DATA_DIR/${DIRNAME} && rm -rf $CLIENT_DATA_DIR/${DIRNAME}
+			echo -e "\tmoving $TMP_DIR/${DIRNAME} to $CLIENT_DATA_DIR/"
+			mv $TMP_DIR/${DIRNAME} $CLIENT_DATA_DIR/ || exit 1	
+		else
+			echo -e "\tdoes not exist here"
+		fi
+	done
+fi
+echo "Removing temporary files..."
+rm -rf $TMP_DIR
+
+
+
+[ "${AUTO_DOWNLOAD}" != "true" ] && exit 0
+echo "Downloading files form vendor..."
+### download files form vendor:
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jre-8u144-windows-x64.exe
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jre-8u144-windows-i586.exe
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-windows-x64.exe
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-windows-i586.exe
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01-demos/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-windows-x64-demos.zip
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01-demos/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-windows-i586-demos.zip
+# http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-docs-all.zip
+# http://download.oracle.com/otn-pub/java/javafx/8.0.141-b14/336fa29ff2bb4ef291e347e091f7f4a7/javafx-8u141-apidocs.zip
+
+#VERSION=`opsi-admin -dS method getProduct_hash ${PRODUCT_ID} | grep productVersion | cut -d "=" -f 2`
+
+BASE="http://download.oracle.com/otn-pub/java/"
+JAVA_VER="{{JAVA_VER}}"
+JAVA_BUILD="{{JAVA_BUILD}}"
+HASH="{{HASH}}"
+
+JAVAFX_VER="{{JAVAFX_VER}}"
+JAVAFX_BLD="{{JAVAFX_BLD}}"
+JAVAFX_HASH="{{JAVAFX_HASH}}"
+
+CNT=0
+WGET_OPTS="--max-redirect=2 --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\" "
+FS_THRESHOLD=10000
+
+download()
+{	
+	DL_URL=$1
+	[ -n "$2" ] && PACKAGE=$2 || PACKAGE=`basename $DL_URL`
+	
+	let "CNT++"
+	echo -e "Retrieving [$PACKAGE]\n\tfrom: [${DL_URL}]";
+	if [ -f "${DST}/${PACKAGE}" ]; then
+		echo -e "\tfile already exists"
+	else
+		eval wget ${WGET_OPTS} -nv "${DL_URL}" -O "${DST}/${PACKAGE}"
+		if  [ ! -f "${DST}/${PACKAGE}" ]; then
+			let "ERR+=1<<$CNT"
+		else
+			FILESIZE=$(stat -c%s "${DST}/${PACKAGE}")
+			if [ "${FS_THRESHOLD}" -gt "${FILESIZE}" ]; then
+				echo -e "*E*  file has an unusual size; assuming error page"
+				rm -f "${DST}/${PACKAGE}"
+				let "ERR+=1<<$CNT"
+			else			
+				chmod g+r "${DST}/${PACKAGE}"
+			fi
+		fi
+	fi	
+}
+
+{{#ifdef_property_jre}}
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-x64.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-i586.exe
+{{/ifdef_property_jre}}
+
+{{#ifdef_property_jdk}}
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-x64.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-i586.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-docs-all.zip
+{{/ifdef_property_jdk}}
+
+### the automatic download (currently) doesn't work for the demos and the javafx-apidocs
+# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-x64-demos.exe
+# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-i586-demos.exe
+# download ${BASE}/javafx/${JAVAFX_VER}-${JAVAFX_BLD}/${JAVAFX_HASH}/javafx-${JAVAFX_VER}-apidocs.zip
+
+exit $ERR

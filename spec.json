@@ -1,0 +1,46 @@
+{  
+	"_": "=== OPSI package variables ===",
+	"O_PKG_VER"         : "6",
+	"O_SOFTWARE_VER"    : "8.0.144.01",
+	"O_RELEASE_DATE"    : "{{M_TODAY}}",
+	
+	"O_BASE_JAVA"       : "java8",
+	"O_BASE_JRE"        : "jre8",
+	"O_BASE_JDK"        : "jdk8",
+	
+	"STAGE"             : "{{M_STAGE}}",
+	"TESTPREFIX"	    : "{{M_TESTPREFIX}}",
+	"ORGPREFIX"         : "{{M_ORGPREFIX}}",
+	"ORGNAME"           : "{{M_ORGNAME}}",
+
+	"_": "=== Variables for downloading Java ===",
+
+	"_": "=== * JRE/JDK/Demos/Docs ===",
+	"JAVA_VER"    : "8u144",
+	"JAVA_BUILD"  : "b01",
+	"HASH"        : "090f390dda5b47b9b721c7dfaa008135",
+
+	"_": "=== * JavaFX ===",
+	"JAVAFX_VER"  : "8.0.141",
+	"JAVAFX_BLD"  : "b14",
+	"JAVAFX_HASH" : "336fa29ff2bb4ef291e347e091f7f4a7",
+	
+	"_":"=== conditions ===",
+	"ifdef_auto_download"           :true,
+	
+	"ifdef_testing"                 :{{M_TESTING}},	
+	
+	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
+	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
+	"ifdef_property_jdk_adds"       :false,
+	
+	"ifdef_property_language"       :false,
+	"ifdef_property_kill_running"   :true,
+	"ifdef_property_desktop_link"   :false,
+	
+	"_":"=== some tuning ===",
+	"DEFAULT_TESTING_LOGLEVEL" : "7",
+	"DEFAULT_RELEASE_LOGLEVEL" : "5",
+	
+	"_":""
+}

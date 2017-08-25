@@ -1,0 +1,201 @@
+;======================================================================
+; delsub.ins JAVA
+; Installer-Typ: Oracle/MSI
+;
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 16:14:49 +0200
+;======================================================================
+
+;=======================================
+[sub_delsub_main]
+;=======================================
+Message "Removing previous version(s) of " + $ProductName$
+ShowBitmap $Img_Prepare$ $ProductName$
+marktime
+
+if FileExists($UninstallLog$)
+	Files_delUninstallLog
+endif
+
+if FileExists("%ScriptPath%\checkinstance.opsiinc")
+	include_append "%ScriptPath%\checkinstance.opsiinc"
+	sub_checkinstance_init
+endif
+
+;=== get list of UninstIDs from registry:
+if FileExists("%ScriptPath%\uninst_section_search.opsiinc")
+	;=== search in registry for available uninstall information
+	include_append "%ScriptPath%\uninst_section_search.opsiinc"
+	Sub_init_uninstall_keys_resultlist
+	{{#ifdef_property_jre}}
+		; search for JRE uninstall key (32/64bit)
+		set $SearchPattern$ = $SearchPattern_JRE$
+		Sub_search_registry_uninstall_keys
+	{{/ifdef_property_jre}}
+	{{#ifdef_property_jdk}}
+		; search for JDK uninstall key (32/64bit)
+		set $SearchPattern$ = $SearchPattern_JDK$
+		Sub_search_registry_uninstall_keys
+	{{/ifdef_property_jdk}}	
+else
+	;=== fallback:
+	; ...there is no fallback for Java
+endif
+
+if not ( count ($ResultList$) = "0" )
+
+	{{#ifdef_property_kill_running}}
+	;=== check for / kill running applications:
+	if ($bCheckInstance$ = "true")
+		
+		set $Applications$ = GetProductPropertyList("kill_applic",emptylist($Applications$))
+		if not ( count ($Applications$) = "0" )
+			set $PSDETAIL_MODE$ = "name"
+			for %app% in $Applications$ do sub_kill_Applic
+		endif
+		
+		set $bKillRunning = GetProductProperty("kill_running", "false")
+		if ($bKillRunning = "true")
+			set $PSDETAIL_MODE$ = "exe"
+			{{#ifdef_property_jre}}
+				set $CheckProcess$  = "%\" + $PathPrefix$ + "JRE_%\bin"
+				sub_checkinstance
+			{{/ifdef_property_jre}}
+			{{#ifdef_property_jdk}}
+				set $CheckProcess$  = "%\" + $PathPrefix$ + "JDK_%\bin"
+				sub_checkinstance
+			{{/ifdef_property_jdk}}
+		endif
+	endif
+	{{/ifdef_property_kill_running}}
+	
+	;=== process uninstall for all found uninstall sections:
+	for %id% in $ResultList$ do sub_Uninstall_ID
+	
+	;=== custom post uninstall
+	comment "include custom post uninstall file"
+	if not ($CustomPostUninstall$ = "none")
+		if FileExists("%ScriptPath%\custom\" + $CustomPostUninstall$)
+			ShowBitmap $Img_Uninstall_Custom$ $ProductName$
+			include_insert "%ScriptPath%\custom\" + $CustomPostUninstall$
+			ShowBitmap $Img_Uninstall$ $ProductName$
+		endif
+	endif	
+	
+	;=== measure time
+	set $TimeDiff$ = getDiffTimeSec
+	Message  "Removal time: " + $TimeDiff$ + " seconds"	
+	
+else
+	comment "Empty result list while searching for " + $ProductName$ + " in registry - does not seem to be installed"
+endif	
+
+
+;=======================================
+[sub_Uninstall_ID]
+;=======================================
+set $Uninst_ID$    	= takeString(0, splitString("%id%", "|"))
+set $Uninst_Arch$  	= takeString(1, splitString("%id%", "|"))
+
+set $RegKey$		="[HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\" + $Uninst_ID$ + "]"
+
+Switch $Uninst_Arch$
+	Case "x32"
+			set $DisplayName$    	= GetRegistryStringValue32($RegKey$ + " DisplayName")
+			set $Inst_Loc$ 			= GetRegistryStringValue32($RegKey$ + " InstallLocation")
+			set $Inst_Ver$ 			= GetRegistryStringValue32($RegKey$ + " DisplayVersion")
+			set $UninstallString$  	= GetRegistryStringValue32($RegKey$ + " UninstallString")
+	EndCase
+	Case "x64"
+			set $DisplayName$    	= GetRegistryStringValue64($RegKey$ + " DisplayName")
+			set $Inst_Loc$ 			= GetRegistryStringValue64($RegKey$ + " InstallLocation")
+			set $Inst_Ver$ 			= GetRegistryStringValue64($RegKey$ + " DisplayVersion")
+			set $UninstallString$   = GetRegistryStringValue64($RegKey$ + " UninstallString")
+	EndCase
+	DefaultCase
+			Comment "Invalid architecture for " + $Uninst_ID$ + " given: " + $Uninst_Arch$
+	EndCase
+EndSwitch
+
+if ($UninstallString$ = "") 
+	LogWarning "Missing UninstallString for [%id%] -- skipping"
+	Comment "Removing malformed key"
+else
+	comment "Start uninstall sub section for " + $DisplayName$ + " "  + $Inst_Ver$ + " (" + $Uninst_Arch$ + ")"
+	Sub_Uninstall_Package
+endif
+
+
+;======================================================================
+[Sub_Uninstall_Package]
+;======================================================================
+ShowBitmap $Img_Uninstall$ $ProductName$
+Message "Uninstalling previous setup of " + $DisplayName$
+
+;=== check uninstall directory
+sub_check_PathVar
+
+;=== run uninstaller
+Winbatch_Uninstall_MSI
+sub_check_exitcode_msi
+
+if ($ExitCode$ INT = "0") and not ($Uninst_RegDir$ = "")
+	;=== does the installation directory still exist?
+	if (FileExists($Uninst_RegDir$))
+		logWarning "Install directory still exists: [" + $Uninst_RegDir$ + "]"
+		;=== try final cleanup
+		Files_del_InstallDir
+	endif
+endif	
+
+
+;======================================================================
+[sub_kill_Applic]
+;======================================================================
+if not ("%app%" = "")
+	set $CheckProcess$  = "%app%"
+	sub_checkinstance
+endif
+
+
+;======================================================================
+[Winbatch_Uninstall_MSI]
+;======================================================================
+msiexec /qb-! /liwemo+ "$UninstallLog$" /X $Uninst_ID$ REBOOT=ReallySuppress
+
+
+;======================================================================
+[Files_del_InstallDir]
+;======================================================================
+delete -sfc "$Uninst_RegDir$"
+
+
+;======================================================================
+[Files_delUninstallLog]
+;======================================================================
+delete -f "$UninstallLog$"
+
+
+;======================================================================
+[sub_check_Exitcode]
+;======================================================================
+;*** generic exit code check
+set $ExitCode$ = getLastExitCode
+if not ($ExitCode$ = "0")
+	logWarning "Last operation returned exitcode " + $ExitCode$
+endif
+
+
+;======================================================================
+[sub_check_PathVar]
+;======================================================================
+if ($Inst_Loc$ = "")
+	logWarning "Registry InstallLocation for " + $DisplayName$ + " is empty!"
+	$Uninst_RegDir$ =""
+else 
+	set $Uninst_RegDir$ = stringReplace(lower($Inst_Loc$) + "\", "\\", "\")
+	; normalisieren:
+	if not (strPart($Uninst_RegDir$, strLength($Uninst_RegDir$),"1") = "\" )
+		set $Uninst_RegDir$ = $Uninst_RegDir$ + "\"
+	endif
+endif
+
