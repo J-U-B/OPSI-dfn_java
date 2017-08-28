@@ -5,6 +5,7 @@
 * [Paketinfo](#paketinfo)
 * [Paket erstellen](#paket_erstellen)
   * [Makefile und spec.json](#makefile_und_spec)
+  * [pystache](#pystache)
   * [Verzeichnisstruktur](#verzeichnisstruktur)
   * [Makefile-Parameter](#makefile_parameter)
   * [spec.json](#spec_json)
@@ -65,6 +66,19 @@ die Erstellung der Pakete.
 
 Im Idealfall ist beim Erscheinen einer neuen Release von JRE bzw. JDK lediglich
 **<code>spec.json</code>** anzupassen.
+
+
+
+<div id="pystache"></div>
+
+### pystache ###
+
+Als Template-Engine kommt **<code>pystache</code>** zum Einsatz.
+Das entsprechende Paket ist auf dem Build-System aus dem Repository der verwendeten
+Distribution zu installieren.
+
+Unter Debian/Ubuntu erledigt das:
+> <code>sudo apt-get install python-pystache</code>
 
 
 

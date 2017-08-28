@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 15:21:19 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 13:18:59 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -17,7 +17,7 @@ Set $NTVersion$   		= GetMsVersionInfo
 ;-----------------------------------------------------------
 requiredWinstVersion >= "4.11.6"
 
-if not ($NTVersion$ >= "6.1")
+if not (CompareDotSeparatedNumbers($NTVersion$, ">=", "6.1"))
 	LogError "OS is not Windows 7 or above"
 	isFatalError
 endif
