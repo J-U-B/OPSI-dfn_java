@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 13:18:59 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:08:48 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -185,6 +185,22 @@ set $Img_Uninstall_Custom$	= "%ScriptPath%\images\" + $Img_BaseName$ +"_uninstal
 
 ShowBitmap $Img_Prepare$ $ProductName$
 
+;-----------------------------------------------------------
+;*** read install properties
+;-----------------------------------------------------------
+{{#ifdef_property_jre}}
+set $bInstallJRE$ = getProductProperty("install_jre","false")
+{{/ifdef_property_jre}}
+{{^ifdef_property_jre}}
+set $bInstallJRE$ = "false"
+{{/ifdef_property_jre}}
+
+{{#ifdef_property_jdk}}
+set $bInstallJDK$ = getProductProperty("install_jdk","false")
+{{/ifdef_property_jdk}}
+{{^ifdef_property_jdk}}
+set $bInstallJDK$ = "false"
+{{/ifdef_property_jdk}}
 
 ;===================================================================
 ;*** product specific settings

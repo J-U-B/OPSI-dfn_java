@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 16:14:35 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:10:09 +0200
 ;======================================================================
 
 ;======================================================================
@@ -56,15 +56,18 @@ else
 		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
 	
 		{{#ifdef_property_jre}}
+		if ($bInstallJRE$ = "true")
 			message "Installing JRE " + $Version$ + " (32 bit)"
 			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_32$
 			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
 			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
 			
 			Sub_Install
+		endif
 		{{/ifdef_property_jre}}
 		
 		{{#ifdef_property_jdk}}
+		if ($bInstallJDK$ = "true")
 			message "Installing JDK " + $Version$ + " (32 bit)"
 			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_32$
 			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
@@ -73,6 +76,7 @@ else
 			Sub_Install	
 			
 			;***** ToDo: Documentation, Demos *****	
+		endif
 		{{/ifdef_property_jdk}}
 	
 	endif
@@ -81,15 +85,18 @@ else
 		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
 	
 		{{#ifdef_property_jre}}
+		if ($bInstallJRE$ = "true")
 			message "Installing JRE " + $Version$ + " (64 bit)"
 			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_64$
 			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
 			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
 			
 			Sub_Install
+		endif
 		{{/ifdef_property_jre}}
 		
 		{{#ifdef_property_jdk}}
+		if ($bInstallJDK$ = "true")
 			message "Installing JDK " + $Version$ + " (64 bit)"
 			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_64$
 			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
@@ -98,6 +105,7 @@ else
 			Sub_Install	
 			
 			;***** ToDo: Documentation, Demos *****		
+		endif
 		{{/ifdef_property_jdk}}
 	
 	endif	

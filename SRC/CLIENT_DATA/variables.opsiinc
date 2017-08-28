@@ -3,7 +3,7 @@
 ; This file contains all possible variables, excluding the opsi-system
 ; variables, for the opsi-winst scripts in use.
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 12:18:38 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:03:38 +0200
 ;======================================================================
 
 DefStringList $Applications$
@@ -14,6 +14,8 @@ DefStringList $TempList$
 
 DefVar $Archive$
 DefVar $bCheckInstance$
+DefVar $bInstallJDK$
+DefVar $bInstallJRE$
 DefVar $bKillRunning
 DefVar $bPSDetail$
 DefVar $bWEBJAVA$
