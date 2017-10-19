@@ -75,6 +75,7 @@ header:
 	@echo "                      Building OPSI package(s)"
 	@echo "=================================================================="
 
+
 mpimsp: header
 	@echo "---------- building MPIMSP package -------------------------------"
 	@make 	TESTPREFIX=""	 \
@@ -148,10 +149,6 @@ help: header
 	@echo "	PACKAGE=[jre|jdk|full]          (default: full)"
 	@echo "	ARCHIVE_FORMAT=[cpio|tar]       (default: cpio)"
 
-all_test:  header mpimsp_test dfn_test dfn_test_0
-
-all_prod : header mpimsp dfn
-
 build_dirs:
 	@echo "* Creating/checking directories"
 	@if [ ! -d "$(BUILD_DIR)" ]; then mkdir -p "$(BUILD_DIR)"; fi
@@ -179,7 +176,7 @@ copy_from_src:	build_dirs
 	
 build: copy_from_src
 	@echo "* Choosen package type: $(PACKAGE)  [JRE:$(BUILD_FOR_JRE), JDK:$(BUILD_FOR_JDK)]"
-	@$(if $(filter $(STAGE),testing), $(eval TESTING :="true"), $(eval TESTING : = "false"))
+	@$(if $(filter $(STAGE),testing), $(eval TESTING :="true"), $(eval TESTING := "false"))
 	@echo "* Creating $(BUILD_JSON)"
 	@rm -f $(BUILD_JSON)
 	$(PYSTACHE) spec.json "{ \"BUILD_FOR_JDK\": \"$(BUILD_FOR_JDK)\", \
@@ -212,8 +209,8 @@ build: copy_from_src
 	cd $(CURDIR)
 
 
-all_test:  header mpimsp_test dfn_test
+all_test:  header mpimsp_test dfn_test dfn_test_0
 
 all_prod : header mpimsp dfn
 
-all : header mpimsp dfn mpimsp_test dfn_test
+all : header mpimsp dfn mpimsp_test qfn_test dfn_test_0

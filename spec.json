@@ -1,7 +1,7 @@
 {  
 	"_": "=== OPSI package variables ===",
 	"O_PKG_VER"         : "6",
-	"O_SOFTWARE_VER"    : "8.0.144.01",
+	"O_SOFTWARE_VER"    : "8.0.152.16",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	
 	"O_BASE_JAVA"       : "java8",
@@ -16,9 +16,9 @@
 	"_": "=== Variables for downloading Java ===",
 
 	"_": "=== * JRE/JDK/Demos/Docs ===",
-	"JAVA_VER"    : "8u144",
-	"JAVA_BUILD"  : "b01",
-	"HASH"        : "090f390dda5b47b9b721c7dfaa008135",
+	"JAVA_VER"    : "8u152",
+	"JAVA_BUILD"  : "b16",
+	"HASH"        : "aa0333dd3019491ca4f6ddbe78cdb6d0",
 
 	"_": "=== * JavaFX ===",
 	"JAVAFX_VER"  : "8.0.141",
