@@ -32,8 +32,7 @@
 Dieses OPSI-Paket (bzw. dessen Quellen) fuer **Java 8** deckt optional sowohl 
 die **Runtime Enivronment (JRE)** als auch das **Development Kit (JDK)** jeweils 
 in der 32- und 64-Bit-Version ab.  
-Weiterhin werden optional (nur beim JDK) Demos/Samples, die JDK-Dokumentation
-und die JavaFX-Dokumentation installiert.
+Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
 
 Das Paket wurde aus dem internen Paket des *Max-Planck-Institut fuer Mikrostrukturphysik*
 abgeleitet und fuer die Verwendung im *DFN*-Repository angepasst und erweitert.
@@ -109,6 +108,12 @@ Paketes festlegen:
 Ohne Angabe des Parameters bietet das erstellte OPSI-Paket die Installation 
 von JRE und JDK an.
 
+Das Paket kann mit *"batteries included"* erstellt werden. In dem Fall erfolgt 
+der Download der Software beim Erstellen des OPSI-Paketes und nicht erst bei
+dessen Installation:
+> *<code>ALLINC=[true|false]</code>*
+
+Standard ist hier die Erstellung des leichtgewichtigen Paketes (```ALLINC=false```).
 
 
 <div id="spec_json"></div>
@@ -127,19 +132,15 @@ sollen nur noch in <code>spec.json</code> angepasst werden. Den Rest uebernimmt 
 
 ## Installation ##
 
-Die Software selbst wird <u>nicht</u> mit diesem Paket vertrieben.
+Die Software selbst wird - sofern bei der Paketerstellung nicht anders vorgegeben - 
+<u>nicht</u> mit diesem Paket vertrieben. Fuer die *"batteries included"*-Pakete 
+entfaellt dieser Abschnitt.
 
 Bei der Installation des Paketes im Depot erfolgt im <code>postinst</code>-Script 
 der Download der Software vom Hersteller (Windows, 32 und 64 Bit).  
-Ein manueller Download sollte nicht erforderlich sein. Allerdings schlaegt der 
-automatische Download fuer die folgenden Files fehl:
-* javafx-_{{JAVAFX_VER}}_-apidocs.zip
-* jdk-_{{JAVA_VER}}_-windows-x64-demos.exe
-* jdk-_{{JAVA_VER}}_-windows-i586-demos.exe
+Ein manueller Download sollte dann nicht erforderlich sein. 
 
-Diese muessen (sofern die optionale Installation gewuenscht ist manuell heruntergeladen werden.
-
-Das Gesamtvolumen der herunterzuladenden Dateien betraegt ca. **730 MByte**.
+Das Gesamtvolumen der herunterzuladenden Dateien betraegt ca. **625 MByte**.
 
 
 
@@ -161,8 +162,6 @@ koennen die verfuegbaren Properties abweichen.
 | install_jre | bool |  | True/False |  |  | Install Java Runtime Environment | Default abhaengig vom erstellten Paket |
 | install_jdk | bool |  | True/False |  |  | Install Java SE Developemnt Kit | Default abhaengig vom erstellten Paket |
 | install_jdk_doc | bool |  | False |  |  | Install Java SE Development Kit Documentation (only available for JDK) | verfuegbar falls JDK enthalten |
-| install_javafx_doc | bool |  | False |  |  | Install JavaFX API Documentation (only available for JDK) | verfuegbar falls JDK enthalten und *ifdef_property_jdk_adds* in spec.json aktiv |
-| install_demos | bool |  | False |  |  | Install Java SE Development Kit Demos and Samples (only available for JDK) | verfuegbar falls JDK enthalten und *ifdef_property_jdk_adds* in spec.json aktiv |
 | web_java | unicode | "Disable", "Enable" | "Disable" | False | False | Allow Java applets in web browser? |  |
 | install_architecture | unicode | "32 bit", "64 bit", "both", "sysnative" | "sysnative" | False | False | which architecture (32/64 bit) should be installed |  |
 | default_language | unicode | "de", "en-GB", "en-US" | "en-US" | False | False | application default language | fuer Java nicht relevant, inaktiv via spec.json | 
@@ -331,10 +330,7 @@ weiterer freier Grafiken erstellt.
 Es fehlt noch:
 
 * Installation von jdk-*-docs-all.zip
-* Code fuer *<code>ifdef_property_jdk_adds</code>* mit
-  * Installation von javafx-*-apidocs.zip
-  * Installation von jdk-*-windows-[i586|x64]-demos.zip
 * weitere Features und Einstellungen...
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2017-08-24 15:57:18 +0200
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2017-11-24 16:52:51 +0100

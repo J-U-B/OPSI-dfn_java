@@ -7,3 +7,5 @@
 *.log
 BUILD/
 PACKAGES/
+DOWNLOAD/
+package_download.sh

@@ -1,0 +1,73 @@
+#! /bin/bash -x
+#=====================================================================
+# Download JDK/JRE packages
+#=====================================================================
+# J. Boettge <boettge@mpi-halle.mpg.de>  2017-11-24 13:23:03 +0100
+#=====================================================================
+
+echo "Downloading files form vendor..."
+
+if [ -z "$DST" ]; then
+	#fallback:
+	DST="./DL"
+	[ ! -d "$DST" ]  && mkdir $DST
+fi
+
+# remove trailing "/" in path:
+DST=${DST%\/}
+ERR=0
+
+BASE="http://download.oracle.com/otn-pub/java/"
+JAVA_VER="{{JAVA_VER}}"
+JAVA_BUILD="{{JAVA_BUILD}}"
+HASH="{{HASH}}"
+
+JAVAFX_VER="{{JAVAFX_VER}}"
+JAVAFX_BLD="{{JAVAFX_BLD}}"
+JAVAFX_HASH="{{JAVAFX_HASH}}"
+
+CNT=0
+WGET_OPTS="--progress=bar:force --max-redirect=2 --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\" "
+FS_THRESHOLD=10000
+
+download()
+{	
+	DL_URL=$1
+	[ -n "$2" ] && PACKAGE=$2 || PACKAGE=`basename $DL_URL`
+	
+	let "CNT++"
+	echo -e "Retrieving [$PACKAGE]\n\tfrom: [${DL_URL}]";
+	if [ -f "${DST}/${PACKAGE}" ]; then
+		echo -e "\tfile already exists"
+	else
+		eval wget ${WGET_OPTS} "${DL_URL}" -O "${DST}/${PACKAGE}"
+		if  [ ! -f "${DST}/${PACKAGE}" ]; then
+			let "ERR+=1<<$CNT"
+		else
+			FILESIZE=$(stat -c%s "${DST}/${PACKAGE}")
+			if [ "${FS_THRESHOLD}" -gt "${FILESIZE}" ]; then
+				echo -e "*E*  file has an unusual size; assuming error page"
+				rm -f "${DST}/${PACKAGE}"
+				let "ERR+=1<<$CNT"
+			else			
+				chmod g+r "${DST}/${PACKAGE}"
+			fi
+		fi
+	fi	
+}
+
+{{#ifdef_property_jre}}
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-x64.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-i586.exe
+{{/ifdef_property_jre}}
+
+{{#ifdef_property_jdk}}
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-x64.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-i586.exe
+download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-docs-all.zip
+{{/ifdef_property_jdk}}
+
+### the automatic download (currently) doesn't work for the demos and the javafx-apidocs
+# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-x64-demos.exe
+# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-i586-demos.exe
+# download ${BASE}/javafx/${JAVAFX_VER}-${JAVAFX_BLD}/${JAVAFX_HASH}/javafx-${JAVAFX_VER}-apidocs.zip

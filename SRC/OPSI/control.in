@@ -174,6 +174,25 @@ default: [""]
 
 [Changelog]
 java8-{{O_SOFTWARE_VER}}-{{O_PKG_VER}} {{STAGE}}:
+	* support for "batteries-included" packages
+	  * software download via Makefile
+	  * installation archives optional included in OPSI package
+	  
+	{{#ToDo}}
+		* features to implement
+			* install documentation for JDK (property)
+			* properties: 
+				* patchjce 
+				* webjava-security_level
+				* java-updater
+				* updatebranch
+		* fixes:
+			*
+	{{/ToDo}}
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-11-24 17:41:06 +0100
+
+java8-8.0.152.16-6 {{STAGE}}:
 	* package update to 8.0.144.01
 	* package support for JRE and JDK
 	* new: License GPLv3

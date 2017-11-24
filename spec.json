@@ -1,6 +1,6 @@
 {  
 	"_": "=== OPSI package variables ===",
-	"O_PKG_VER"         : "6",
+	"O_PKG_VER"         : "7",
 	"O_SOFTWARE_VER"    : "8.0.152.16",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	
@@ -29,6 +29,7 @@
 	"ifdef_auto_download"           :true,
 	
 	"ifdef_testing"                 :{{M_TESTING}},	
+	"ifdef_allinc"                  :{{M_ALLINC}},	
 	
 	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
