@@ -2,7 +2,7 @@
 #=====================================================================
 # Download JDK/JRE packages
 #=====================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2017-11-24 13:23:03 +0100
+# J. Boettge <boettge@mpi-halle.mpg.de>  2017-12-07 16:32:00 +0100
 #=====================================================================
 
 echo "Downloading files form vendor..."
@@ -17,7 +17,7 @@ fi
 DST=${DST%\/}
 ERR=0
 
-BASE="http://download.oracle.com/otn-pub/java/"
+BASE="http://download.oracle.com/otn-pub/java/jdk"
 JAVA_VER="{{JAVA_VER}}"
 JAVA_BUILD="{{JAVA_BUILD}}"
 HASH="{{HASH}}"
@@ -56,18 +56,25 @@ download()
 	fi	
 }
 
-{{#ifdef_property_jre}}
-download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-x64.exe
-download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-i586.exe
-{{/ifdef_property_jre}}
+if [ "{{O_BASE_JAVA}}" = "java8" ]; then
+	{{#ifdef_property_jre}}
+	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-x64.exe
+	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}-windows-i586.exe
+	{{/ifdef_property_jre}}
 
-{{#ifdef_property_jdk}}
-download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-x64.exe
-download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-i586.exe
-download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-docs-all.zip
-{{/ifdef_property_jdk}}
+	{{#ifdef_property_jdk}}
+	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-x64.exe
+	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-windows-i586.exe
+	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-docs-all.zip
+	{{/ifdef_property_jdk}}
 
-### the automatic download (currently) doesn't work for the demos and the javafx-apidocs
-# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-x64-demos.exe
-# download ${BASE}/jdk/${JAVA_VER}-${JAVA_BUILD}-demos/${HASH}/jdk-${JAVA_VER}-windows-i586-demos.exe
-# download ${BASE}/javafx/${JAVAFX_VER}-${JAVAFX_BLD}/${JAVAFX_HASH}/javafx-${JAVAFX_VER}-apidocs.zip
+elif [ "{{O_BASE_JAVA}}" = "java9" ]; then	
+	{{#ifdef_property_jre}}
+	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}_windows-x64_bin.exe
+	{{/ifdef_property_jre}}
+
+	{{#ifdef_property_jdk}}
+	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}_windows-x64_bin.exe
+	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}_doc-all.zip
+	{{/ifdef_property_jdk}}
+fi

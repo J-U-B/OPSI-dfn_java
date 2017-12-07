@@ -1,41 +1,79 @@
 ############################################################
 # OPSI package Makefile (JAVA)
-# Version: 1.6
+# Version: 2.1.1
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2017-11-24 13:27:56 +0100
+# 2018-03-26 15:47:36 +0200
 ############################################################
 
-.PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help
-#.DEFAULT_GOAL := mpimsp_test
+.PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
 .DEFAULT_GOAL := help
 
-OPSI_BUILDER = opsi-makeproductfile
-BUILD_DIR = ./BUILD
-DL_DIR = ./DOWNLOAD
-PACKAGE_DIR = ./PACKAGES
-SRC_DIR = ./SRC
 PWD = ${CURDIR}
+BUILD_DIR = BUILD
+DL_DIR = $(PWD)/DOWNLOAD
+PACKAGE_DIR = PACKAGES
+SRC_DIR = SRC
 
-PYSTACHE = ./SRC/pystache_opsi.py
+OPSI_BUILDER := $(shell which opsi-makepackage)
+ifeq ($(OPSI_BUILDER),)
+	override OPSI_BUILDER := $(shell which opsi-makeproductfile)
+	ifeq ($(OPSI_BUILDER),)
+		$(error Error: opsi-make(package|productfile) not found!)
+	endif
+endif
+$(info * OPSI_BUILDER = $(OPSI_BUILDER))
+
+PYSTACHE = ./SRC/SCRIPTS/pystache_opsi.py
 BUILD_JSON = $(BUILD_DIR)/build.json
 CONTROL_IN = $(SRC_DIR)/OPSI/control.in
 CONTROL = $(BUILD_DIR)/OPSI/control
-DOWNLOAD_SH_IN = package_download.sh.in
-DOWNLOAD_SH = package_download.sh
+DOWNLOAD_SH_IN = ./SRC/CLIENT_DATA/product_downloader.sh.in
+DOWNLOAD_SH = $(PWD)/product_downloader.sh
 OPSI_FILES := control preinst postinst
-# FILES_IN := checkinstance.opsiinc delsub.opsiinc exit_code_msi.opsiinc setup.opsiscript
-FILES_IN := $(basename $(shell (cd $(SRC_DIR)/CLIENT_DATA; ls *.in)))
+FILES_IN := $(basename $(shell (cd $(SRC_DIR)/CLIENT_DATA; ls *.in 2>/dev/null)))
+FILES_OPSI_IN := $(basename $(shell (cd $(SRC_DIR)/OPSI; ls *.in 2>/dev/null)))
+TODAY := $(shell date +"%Y-%m-%d")
+MD5SUM_FILE := java.md5sums
 
+### spec file:
+SPEC ?= spec.json
+ifeq ($(shell test -f $(SPEC) && echo OK),OK)
+    $(info * spec file found: $(SPEC))
+else
+    $(error Error: spec file NOT found: $(SPEC))
+endif
+
+### Only download packages?
+ifeq ($(MAKECMDGOALS),download)
+	ONLY_DOWNLOAD=true
+else
+	ONLY_DOWNLOAD=false
+endif
+
+### build "batteries included' package?
+ALLINC ?= false
+ALLINC_SEL := "[true] [false]"
+AFX := $(firstword $(ALLINC))
+AFY := $(shell echo $(AFX) | tr A-Z a-z)
+AFZ := $(findstring [$(AFY)],$(ALLINC_SEL))
+ifeq (,$(AFZ))
+	ALLINCLUSIVE := false
+else
+	ALLINCLUSIVE := $(AFY)
+endif
+
+ifeq ($(ALLINCLUSIVE),true)
+	CUSTOMNAME := ""
+else
+	CUSTOMNAME := "dl"
+endif
+
+### JRE or JDK or both?
 PACKAGE ?= full
 PACKAGE_TYPES="[jre] [jdk] [full]"
 
-ALLINC ?= false
-ALLINC_SEL="[true] [false]"
-
 PKGX := $(firstword $(PACKAGE))
 PKGY := $(shell echo $(PKGX) | tr A-Z a-z)
-
-TODAY := $(shell date +"%Y-%m-%d")
 
 ifeq (, $(findstring [$(PKGY)],$(PACKAGE_TYPES)))
 	PKG = full
@@ -66,16 +104,30 @@ else
 	BUILD_FORMAT = $(AFY)
 endif
 
+JAVA_VER := $(shell grep '"JAVA_VER"' $(SPEC) | sed -e 's/^.*\s*:\s*\"\(.*\)\".*$$/\1/' )
+FILES_MASK := *-$(JAVA_VER)*.exe
+
 leave_err:
 	exit 1
 
 var_test:
 	@echo "=================================================================="
-	@echo "* Choosen package type: \n\t[$(PACKAGE)][$(PKGX)][$(PKGY)][$(PKGZ)]" 
-	@echo "	 --> $(PKG)	[build JRE:$(BUILD_FOR_JRE), build JDK:$(BUILD_FOR_JDK)]"
-	@echo "* OPSI Archive Types: [$(ARCHIVE_TYPES)]"
-	@echo "* OPSI Archive Format: [$(ARCHIVE_FORMAT)][$(AFX)][$(AFY)][$(AFZ)] \n\t--> $(BUILD_FORMAT)"
+	@echo "* Java Version          : $(JAVA_VER)"
+	@echo "* SPEC file             : [$(SPEC)]"
+	@echo "* Batteries included    : [$(ALLINC)] --> [$(ALLINCLUSIVE)]"
+	@echo "* Custom Name           : [$(CUSTOMNAME)]"
+	@echo "* Choosen package type  : [$(PACKAGE)][$(PKGX)][$(PKGY)][$(PKGZ)] --> $(PKG)	[build JRE:$(BUILD_FOR_JRE), build JDK:$(BUILD_FOR_JDK)]"
+	@echo "* OPSI Archive Types    : [$(ARCHIVE_TYPES)]"
+	@echo "* OPSI Archive Format   : [$(ARCHIVE_FORMAT)][$(AFX)][$(AFY)][$(AFZ)] --> $(BUILD_FORMAT)"
+	@echo "* Templates OPSI        : [$(FILES_OPSI_IN)]"
+	@echo "* Templates CLIENT_DATA : [$(FILES_IN)]"
+	@echo "* Files Mask            : [$(FILES_MASK)]"
 	@echo "=================================================================="
+	@echo "* Installer files in $(DL_DIR):"
+	@for F in `ls -1 $(DL_DIR)/$(FILES_MASK) | sed -re 's/.*\/(.*)$$/\1/' `; do echo "    $$F"; done 
+	@ $(eval NUM_FILES := $(shell ls -l $(DL_DIR)/$(FILES_MASK) 2>/dev/null | wc -l))
+	@echo "* $(NUM_FILES) files found"
+	@echo "=================================================================="	
 
 
 header:
@@ -83,6 +135,11 @@ header:
 	@echo "                      Building OPSI package(s)"
 	@echo "=================================================================="
 
+fix_rights:
+	@echo "---------- setting rights for PACKAGES folder --------------------"
+	chgrp -R opsiadmin $(PACKAGE_DIR)
+	chmod g+rx $(PACKAGE_DIR)
+	chmod g+r $(PACKAGE_DIR)/*
 
 mpimsp: header
 	@echo "---------- building MPIMSP package -------------------------------"
@@ -132,15 +189,15 @@ dfn_test_noprefix: header
 			STAGE="testing"  \
 	build
 
-clean_packages: header
+clean_packages:
 	@echo "---------- cleaning packages, checksums and zsync ----------------"
 	@rm -f $(PACKAGE_DIR)/*.md5 $(PACKAGE_DIR)/*.opsi $(PACKAGE_DIR)/*.zsync
 	
-clean: header
+clean:
 	@echo "---------- cleaning  build directory -----------------------------"
 	@rm -rf $(BUILD_DIR)	
 	
-realclean: header clean
+realclean: clean
 	@echo "---------- cleaning  download directory --------------------------"
 	@rm -rf $(DL_DIR)	
 		
@@ -158,36 +215,62 @@ help: header
 	@echo "	clean_packages"
 	@echo ""
 	@echo "Options:"
+	@echo "	SPEC=<filename>                 (default: spec.json)"
+	@echo "			...alternative spec file"
 	@echo "	PACKAGE=[jre|jdk|full]          (default: full)"
 	@echo "	ALLINC=[true|false]             (default: false)"
 	@echo "			...include software in OPSI package?"
 	@echo "	ARCHIVE_FORMAT=[cpio|tar]       (default: cpio)"
+	@echo ""
 
 build_dirs:
 	@echo "* Creating/checking directories"
 	@if [ ! -d "$(BUILD_DIR)" ]; then mkdir -p "$(BUILD_DIR)"; fi
 	@if [ ! -d "$(BUILD_DIR)/OPSI" ]; then mkdir -p "$(BUILD_DIR)/OPSI"; fi
 	@if [ ! -d "$(BUILD_DIR)/CLIENT_DATA" ]; then mkdir -p "$(BUILD_DIR)/CLIENT_DATA"; fi
+	@if [ ! -d "$(PACKAGE_DIR)" ]; then mkdir -p "$(PACKAGE_DIR)"; fi
+
+build_md5:
+	@echo "* Creating md5sum file for installation archives ($(MD5SUM_FILE))"
+	if [ -f "$(BUILD_DIR)/CLIENT_DATA/$(MD5SUM_FILE)" ]; then \
+		rm -f $(BUILD_DIR)/CLIENT_DATA/$(MD5SUM_FILE); \
+	fi
+	@if [ "$(BUILD_FOR_JRE)" = "true" ] ; then \
+		grep "jre-$(JAVA_VER)[-_]" $(DL_DIR)/$(MD5SUM_FILE)>> $(BUILD_DIR)/CLIENT_DATA/$(MD5SUM_FILE) ; \
+	fi
+	@if [ "$(BUILD_FOR_JDK)" = "true" ] ; then \
+		grep "jdk-$(JAVA_VER)[-_]" $(DL_DIR)/$(MD5SUM_FILE)>> $(BUILD_DIR)/CLIENT_DATA/$(MD5SUM_FILE) ; \
+	fi		
 	
-copy_from_src:	build_dirs
+copy_from_src:	build_dirs build_md5
 	@echo "* Copying files"
 	@cp -upL $(SRC_DIR)/CLIENT_DATA/LICENSE  $(BUILD_DIR)/CLIENT_DATA/
 	@cp -upL $(SRC_DIR)/CLIENT_DATA/readme.md  $(BUILD_DIR)/CLIENT_DATA/
 	@cp -upr $(SRC_DIR)/CLIENT_DATA/bin  $(BUILD_DIR)/CLIENT_DATA/
 	@cp -upr $(SRC_DIR)/CLIENT_DATA/*.opsiscript  $(BUILD_DIR)/CLIENT_DATA/
 	@cp -upr $(SRC_DIR)/CLIENT_DATA/*.opsiinc     $(BUILD_DIR)/CLIENT_DATA/
-	@if [ "$(ALLINC)" = "true" ]; then \
-		echo "  * building all included package"; \
-		if [ ! -d "$(BUILD_DIR)/CLIENT_DATA/files" ]; then mkdir -p "$(BUILD_DIR)/CLIENT_DATA/files"; fi; \
-		rm -f $(BUILD_DIR)/CLIENT_DATA/files/* ; \
+	@cp -upr $(SRC_DIR)/CLIENT_DATA/*.opsifunc     $(BUILD_DIR)/CLIENT_DATA/
+	@ $(eval NUM_FILES := $(shell ls -l $(DL_DIR)/$(FILES_MASK) 2>/dev/null | wc -l))
+	@if [ "$(ALLINCLUSIVE)" = "true" ]; then \
+		echo "  * building batteries included package"; \
+		if [ ! -d "$(BUILD_DIR)/CLIENT_DATA/files" ]; then \
+			echo "    * creating directory $(BUILD_DIR)/CLIENT_DATA/files"; \
+			mkdir -p "$(BUILD_DIR)/CLIENT_DATA/files"; \
+		else \
+			echo "    * cleanup directory"; \
+			rm -f $(BUILD_DIR)/CLIENT_DATA/files/*; \
+		fi; \
 		if [ "$(BUILD_FOR_JRE)" = "true" ] ; then \
 			echo "    * including JRE packages"; \
-			for F in `ls $(PWD)/$(DL_DIR)/jre*`; do echo "      + $$F"; ln $$F $(BUILD_DIR)/CLIENT_DATA/files/; done; \
+			for F in `ls $(DL_DIR)/jre-$(JAVA_VER)*`; do echo "      + $$F"; ln $$F $(BUILD_DIR)/CLIENT_DATA/files/; done; \
 		fi; \
 		if [ "$(BUILD_FOR_JDK)" = "true" ] ; then \
 			echo "    * including JDK packages"; \
-			for F in `ls $(PWD)/$(DL_DIR)/jdk*`; do echo "      + $$F"; ln $$F $(BUILD_DIR)/CLIENT_DATA/files/; done; \
+			for F in `ls $(DL_DIR)/jdk-$(JAVA_VER)*`; do echo "      + $$F"; ln $$F $(BUILD_DIR)/CLIENT_DATA/files/; done; \
 		fi; \
+	else \
+		echo "    * removing $(BUILD_DIR)/CLIENT_DATA/files"; \
+		rm -rf $(BUILD_DIR)/CLIENT_DATA/files ; \
 	fi
 	@if [ -d "$(SRC_DIR)/CLIENT_DATA/custom" ]; then  cp -upr $(SRC_DIR)/CLIENT_DATA/custom     $(BUILD_DIR)/CLIENT_DATA/ ; fi
 	@if [ -d "$(SRC_DIR)/CLIENT_DATA/files" ];  then  cp -upr $(SRC_DIR)/CLIENT_DATA/files      $(BUILD_DIR)/CLIENT_DATA/ ; fi
@@ -200,52 +283,62 @@ copy_from_src:	build_dirs
 	@if [ -f  "$(SRC_DIR)/OPSI/postinst" ]; then cp -up $(SRC_DIR)/OPSI/postinst  $(BUILD_DIR)/OPSI/; fi
 
 build_json:
+	@if [ ! -f "$(SPEC)" ]; then echo "*Error* spec file not found: \"$(SPEC)\""; exit 1; fi
 	@if [ ! -d "$(BUILD_DIR)" ]; then mkdir -p "$(BUILD_DIR)"; fi
 	@$(if $(filter $(STAGE),testing), $(eval TESTING :="true"), $(eval TESTING := "false"))
 	@echo "* Creating $(BUILD_JSON)"
 	@rm -f $(BUILD_JSON)
-	$(PYSTACHE) spec.json "{ \"BUILD_FOR_JDK\": \"$(BUILD_FOR_JDK)\", \
+	$(PYSTACHE) $(SPEC)   "{ \"BUILD_FOR_JDK\": \"$(BUILD_FOR_JDK)\", \
 	                         \"BUILD_FOR_JRE\": \"$(BUILD_FOR_JRE)\", \
 	                         \"M_TODAY\"      : \"$(TODAY)\",         \
 	                         \"M_STAGE\"      : \"$(STAGE)\",         \
 	                         \"M_ORGNAME\"    : \"$(ORGNAME)\",       \
 	                         \"M_ORGPREFIX\"  : \"$(ORGPREFIX)\",     \
 	                         \"M_TESTPREFIX\" : \"$(TESTPREFIX)\",    \
-	                         \"M_ALLINC\"     : \"$(ALLINC)\",    \
+	                         \"M_ALLINC\"     : \"$(ALLINCLUSIVE)\",    \
 	                         \"M_TESTING\"    : \"$(TESTING)\"        }" > $(BUILD_JSON)
 
 
 download: build_json
-	@rm -f $(DOWNLOAD_SH)
-	$(PYSTACHE) $(DOWNLOAD_SH_IN) $(BUILD_JSON) > $(DOWNLOAD_SH)
-	@chmod +x $(DOWNLOAD_SH)
-	@if [ ! -d "$(DL_DIR)" ]; then mkdir -p "$(DL_DIR)"; fi
-	@DST=$(DL_DIR) ./$(DOWNLOAD_SH)
+	@echo "**Debug** [ALLINC=$(ALLINCLUSIVE)]  [ONLY_DOWNLOAD=$(ONLY_DOWNLOAD)]"
+	@if [ "$(ALLINCLUSIVE)" = "true" -o  $(ONLY_DOWNLOAD) = "true" ]; then \
+		rm -f $(DOWNLOAD_SH) ;\
+		$(PYSTACHE) $(DOWNLOAD_SH_IN) $(BUILD_JSON) > $(DOWNLOAD_SH) ;\
+		chmod +x $(DOWNLOAD_SH) ;\
+		if [ ! -d "$(DL_DIR)" ]; then mkdir -p "$(DL_DIR)"; fi ;\
+		DEST_DIR=$(DL_DIR) $(DOWNLOAD_SH) ;\
+	fi
 	
 	
-build: download copy_from_src
+build: download clean copy_from_src
 	@echo "* Choosen package type: $(PACKAGE)  [JRE:$(BUILD_FOR_JRE), JDK:$(BUILD_FOR_JDK)]"
 	
 	@make build_json
 	
-	@echo "* Creating $(CONTROL)"
-	@rm -f $(CONTROL)
-	@$(PYSTACHE) $(CONTROL_IN) $(BUILD_JSON) > $(CONTROL)
-
-	@echo "* Creating OPSI/postinst"
-	@rm -f $(BUILD_DIR)/OPSI/postinst
-	@${PYSTACHE} $(SRC_DIR)/OPSI/postinst.in $(BUILD_JSON) > $(BUILD_DIR)/OPSI/postinst
+	for F in $(FILES_OPSI_IN); do \
+		echo "* Creating OPSI/$$F"; \
+		rm -f $(BUILD_DIR)/OPSI/$$F; \
+		${PYSTACHE} $(SRC_DIR)/OPSI/$$F.in $(BUILD_JSON) > $(BUILD_DIR)/OPSI/$$F; \
+	done	
 	
 	for F in $(FILES_IN); do \
 		echo "* Creating CLIENT_DATA/$$F"; \
-		rm -f $(BUILD_DIR)CLIENT_DATA/$$F; \
+		rm -f $(BUILD_DIR)/CLIENT_DATA/$$F; \
 		${PYSTACHE} $(SRC_DIR)/CLIENT_DATA/$$F.in $(BUILD_JSON) > $(BUILD_DIR)/CLIENT_DATA/$$F; \
 	done
+	chmod +x $(BUILD_DIR)/CLIENT_DATA/*.sh
 	
 	@echo "* OPSI Archive Format: $(BUILD_FORMAT)"
 	@echo "* Building OPSI package"
-	@cd "$(CURDIR)/$(PACKAGE_DIR)" && $(OPSI_BUILDER) -F $(BUILD_FORMAT) -k -m $(CURDIR)/$(BUILD_DIR)
-	
+	if [ -z $(CUSTOMNAME) ]; then \
+		cd "$(CURDIR)/$(PACKAGE_DIR)" && $(OPSI_BUILDER) -F $(BUILD_FORMAT) -k -m $(CURDIR)/$(BUILD_DIR); \
+	else \
+		cd $(CURDIR)/$(BUILD_DIR) && \
+		for D in OPSI CLIENT_DATA SERVER_DATA; do \
+			if [ -d "$$D" ] ; then mv $$D $$D.$(CUSTOMNAME); fi; \
+		done && \
+		cd "$(CURDIR)/$(PACKAGE_DIR)" && $(OPSI_BUILDER) -F $(BUILD_FORMAT) -k -m $(CURDIR)/$(BUILD_DIR) -c $(CUSTOMNAME); \
+	fi; \
 	cd $(CURDIR)
 
 
@@ -253,4 +346,4 @@ all_test:  header mpimsp_test dfn_test dfn_test_0
 
 all_prod : header mpimsp dfn
 
-all : header mpimsp dfn mpimsp_test qfn_test dfn_test_0
+all : header mpimsp dfn mpimsp_test dfn_test dfn_test_0

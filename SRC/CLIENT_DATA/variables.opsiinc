@@ -3,7 +3,7 @@
 ; This file contains all possible variables, excluding the opsi-system
 ; variables, for the opsi-winst scripts in use.
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:03:38 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 15:17:29 +0200
 ;======================================================================
 
 DefStringList $Applications$
@@ -12,13 +12,13 @@ DefStringList $OutStream$
 DefStringList $ResultList$
 DefStringList $TempList$
 
+DefVar $ActionRequest$
 DefVar $Archive$
 DefVar $bCheckInstance$
 DefVar $bInstallJDK$
 DefVar $bInstallJRE$
 DefVar $bKillRunning
 DefVar $bPSDetail$
-DefVar $bWEBJAVA$
 DefVar $CheckProcess$
 DefVar $currentLogLevel$
 DefVar $CustomPostInstall$
@@ -51,9 +51,12 @@ DefVar $Inst_Opts_JDK$
 DefVar $Inst_Opts_JRE$
 DefVar $Inst_Ver$
 DefVar $isDFN$
+DefVar $JavaMajor$
+DefVar $JAVA_HOME$
 DefVar $JAVASETTINGSCFG$
 DefVar $JAVA_VER$
 DefVar $JDK_FEATURES$
+DefVar $JDK_DOC$
 DefVar $JDK_INSTALLER_32$
 DefVar $JDK_INSTALLER_64$
 DefVar $JRE_INSTALLER_32$
@@ -64,6 +67,7 @@ DefVar $LogLevelDefault$
 DefVar $MainBin$
 DefVar $MinimumSpace$
 DefVar $NTVersion$
+DefVar $PATH$
 DefVar $PathPrefix$
 DefVar $Proc_Cnt$
 DefVar $Proc_Killed$
@@ -71,6 +75,13 @@ DefVar $ProductDir$
 DefVar $ProductId$
 DefVar $ProductName$
 DefVar $program_real$
+DefVar $pr_AutoUpdate$
+DefVar $pr_InstallJdkDoc$
+DefVar $pr_PreUninst$
+DefVar $pr_SetEnv_JavaHome$
+DefVar $pr_Static$
+DefVar $pr_WebJava$
+DefVar $pr_WebJavaSecurityLevel$
 DefVar $PSDETAIL$
 DefVar $PSDETAIL_MODE$
 DefVar $RegKey$
@@ -80,6 +91,7 @@ DefVar $RegPathUninstall32$
 DefVar $RegPathUninstall64$
 DefVar $RegProductID$
 DefVar $RegSearchOpts$
+DefVar $res$
 DefVar $SearchPattern$
 DefVar $SearchPattern_JDK$
 DefVar $SearchPattern_JRE$
@@ -97,6 +109,7 @@ DefVar $UninstallLog$
 DefVar $UninstallString$
 DefVar $Uninst_Arch$
 DefVar $Uninst_ID$
+DefVar $Uninst_Opts$
 DefVar $Uninst_RegDir$
 DefVar $Version$
 

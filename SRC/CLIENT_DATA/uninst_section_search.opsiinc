@@ -79,8 +79,9 @@ Set $DisplayName$     = GetRegistryStringValueSysNative($RegKeyPath$ + " Display
 
 ; if ($DisplayName$ = $SearchPattern$)
 ; if (lower($DisplayName$) = lower($SearchPattern$))
-if (strPos($DisplayName$, $SearchPattern$)="1")
+; if (strPos($DisplayName$, $SearchPattern$)="1")
 ; if (strPos(lower($DisplayName$), lower($SearchPattern$))="1")
+if (strPos( stringReplace($DisplayName$,"(TM)","") , stringReplace($SearchPattern$,"*","") )="1")
 	Set $ResultList$ = AddToList($ResultList$, $RegProductID$ + "|" + $Uninst_Arch$)
 endif
 

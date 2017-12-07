@@ -1,0 +1,145 @@
+;==========================================================================
+; helpers.opsifunc
+; 
+; Some general helper functions...
+;
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 15:07:37 +0200
+;==========================================================================
+
+;-------------------------------------------------------------------------
+DefFunc identity(val $ident$:string) : string
+;-------------------------------------------------------------------------
+; dummy function
+;-------------------------------------------------------------------------
+	set $result$ = $ident$
+EndFunc
+
+
+;-------------------------------------------------------------------------
+DefFunc getEnvVar(val $key$:string) : string
+;-------------------------------------------------------------------------
+; Returns requestet environment variable from registry.
+; If the key doesn't exist, the result is an empty string.
+; Unlike EnvVar, it doesn't dissolve variables.
+;-------------------------------------------------------------------------
+	DefVar $logLvl$
+	set $logLvl$=getLoglevel
+	setLogLevel=0
+	Set $result$ = GetRegistryStringValueSysNative("[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\control\Session Manager\Environment] " + $key$)
+	setLogLevel=$logLvl$
+EndFunc
+
+
+;-------------------------------------------------------------------------
+DefFunc setEnvVar(val $key$:string, val $value$:string, val $type$:string) : string
+;-------------------------------------------------------------------------
+; Set environment variables directly in the registry and verify written value.
+; Valid types are: REG_SZ and REG_EXPAND_SZ
+; Return values:
+;	"0"		success
+;	"1"		verify failed
+;	"2"		invalid type
+;-------------------------------------------------------------------------
+	DefVar $logLvl$
+	set $logLvl$=getLoglevel
+	setLogLevel=0
+	if ($type$ = "REG_SZ") or ($type$ = "REG_EXPAND_SZ")
+		;set $value$ = RegString($value$)
+		Registry_setEnvVar /SysNative
+		if (GetRegistryStringValueSysNative("[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\control\Session Manager\Environment] " + $key$) = $value$)
+			set $result$="0"
+		else
+			set $result$="1"
+		endif
+	else
+		set $result$="2"
+	endif
+	setLogLevel=$logLvl$
+	
+	[Registry_setEnvVar]
+	Openkey [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\control\Session Manager\Environment]
+	Set "$key$" = $type$:"$value$"
+	FlushKey
+	;end Registry_setEnvVar
+		
+EndFunc
+
+
+;-------------------------------------------------------------------------
+DefFunc delEnvVar(val $key$:string) : string
+;-------------------------------------------------------------------------
+; Delete the given environment variable for registry
+
+; Return values:
+;	"0"		variable does not exist or is empty
+;	"1"		variable still exists and is NOT empty
+;-------------------------------------------------------------------------
+	DefVar $logLvl$
+	DefVar $value$
+	set $logLvl$=getLoglevel
+	setLogLevel=0
+	Registry_delEnvVar /SysNative
+	set $value$ = GetRegistryStringValueSysNative("[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\control\Session Manager\Environment] " + $key$)
+	if ($value$ = "")
+		set $result$="0"
+	else
+		set $result$="1"
+	endif
+	setLogLevel=$logLvl$
+	
+	[Registry_delEnvVar]
+	Openkey [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\control\Session Manager\Environment]
+	DeleteVar "$key$"
+	FlushKey
+	;end Registry_delEnvVar
+		
+EndFunc
+
+
+;-------------------------------------------------------------------------
+DefFunc removePath(val $fullPaths$:string, val $pathToRemove$:string) : string
+;-------------------------------------------------------------------------
+; Removes the $pathToRemove$ from $fullPaths$
+;-------------------------------------------------------------------------
+	DefVar $logLvl$
+	DefStringList $pathList$
+	set $logLvl$=getLoglevel
+	setLogLevel=0
+	Set $pathList$ = splitString($fullPaths$, ";")
+	Set $pathList$ = removeFromListByMatch($pathToRemove$,$pathList$)
+	Set $pathList$ = removeFromListByMatch("", $pathList$)
+	Set $result$ = composeString($pathList$, ";")
+	setLogLevel=$logLvl$
+EndFunc
+
+
+;-------------------------------------------------------------------------
+DefFunc addPath(val $fullPaths$:string, val $pathToAdd$:string) : string
+;-------------------------------------------------------------------------
+; Append $pathToAdd$ to $fullPaths$.
+; If $fullPaths$ already contains $pathToAdd$ it remains unchanged
+;-------------------------------------------------------------------------
+	DefVar $logLvl$
+	DefStringList $pathList$
+	set $logLvl$=getLoglevel
+	setLogLevel=0
+	DefVar $found$
+	Set $pathList$ = splitString($fullPaths$, ";")
+	Set $pathList$ = removeFromListByMatch("", $pathList$)
+	set $found$="false"
+	for %p% in $pathList$ do sub_compare_path
+	if ($found$ = "true")
+		comment "Path already contains [" + $pathToAdd$ + "]"
+		set $result$ = $path$
+	else
+		comment "Appending to path: [" + $pathToAdd$ + "]"
+		Set $pathList$ = addToList($pathList$, $pathToAdd$)
+		Set $result$ = composeString($pathList$, ";")
+	endif
+	setLogLevel=$logLvl$
+	
+	[sub_compare_path]
+	if ("%p%" = $pathToAdd$)
+		set $found$ = "true"
+	endif
+EndFunc

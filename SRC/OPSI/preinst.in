@@ -7,10 +7,10 @@
 #   PRODUCT_ID: id of the current product
 #   CLIENT_DATA_DIR: directory where client data will be installed
 #===================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2017-07-25 13:15:28 +0200
+# J. Boettge <boettge@mpi-halle.mpg.de>  2018-02-19 11:03:57 +0100
 #=====================================================================
 
-LOGFILE=/tmp/${PRODUCT_ID}__opsi_package_install.log
+LOGFILE={{O_INST_LOG}}
 
 exec > $LOGFILE
 exec 2>&1

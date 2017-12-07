@@ -1,9 +1,10 @@
-# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8") JAVA8 #
+# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8/9/10") JAVA8 / JAVA9 / JAVA 10#
 
 ## ToC ##
 
 * [Paketinfo](#paketinfo)
 * [Paket erstellen](#paket_erstellen)
+  * [Voraussetzungen](#voraussetzungen)
   * [Makefile und spec.json](#makefile_und_spec)
   * [pystache](#pystache)
   * [Verzeichnisstruktur](#verzeichnisstruktur)
@@ -29,9 +30,13 @@
 
 ## Paketinfo ##
 
-Dieses OPSI-Paket (bzw. dessen Quellen) fuer **Java 8** deckt optional sowohl 
-die **Runtime Enivronment (JRE)** als auch das **Development Kit (JDK)** jeweils 
-in der 32- und 64-Bit-Version ab.  
+Dieses OPSI-Paket (bzw. dessen Quellen) fuer **Java 8**, **Java 9** und
+**Java 10** deckt optional sowohl die **Runtime Enivronment (JRE)** als auch
+das **Development Kit (JDK)** ab. *(Anm.: Die Installationspakete von Oracle
+fuer die JRE erlauben seit der Release 9 keine automatische Installation im Kontext der
+OPSI-Pakete. - siehe [Anmerkungen/ToDo](#anmerkungen_todo))*  
+Waehrend Java 8 in einer 32- und 64-Bit-Version verfuegbar ist, liegen <u>Java 9 
+und Java 10 nur noch als Version fuer 64 Bit</u> vor.  
 Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
 
 Das Paket wurde aus dem internen Paket des *Max-Planck-Institut fuer Mikrostrukturphysik*
@@ -43,6 +48,17 @@ Pakete erstellt.
 Teile dieser Dokumentation beziehen sich nicht ausschliesslich auf die erstellten 
 OSPI-Pakete, sondern beruecksichtigen auch den Build-Prozess.
 
+### Oracle Java SE Support Roadmap
+
+**Achtung:** Die [Oracle Java SE Support Roadmap](http://www.oracle.com/technetwork/java/eol-135779.html)
+deklariert Java 9 und Java 10 als *short term release*! Der Support hierfuer soll bereits
+im Maerz 2018 (Java 9) bzw. September 2018 (Java 10) mit der Veroeffentlichung
+der Nachfolgeversion enden.  
+Oracle fuehrt mit der 18.3 ein neues Namensschema (*YY.M*) ein.  
+Auch die Version 18.3  ist eine *short term release*. Die naechste *LTS* ist 
+mit der 18.9 vorgesehen.  
+Java 18.3 wurde als Java 10 veroeffentlicht.
+
 
 
 <div id="paket_erstellen"></div>
@@ -52,6 +68,19 @@ OSPI-Pakete, sondern beruecksichtigen auch den Build-Prozess.
 Dieser Abschnitt beschaeftigt sich mit der Erstellung des OPSI-Paketes aus
 dem Source-Paket und nicht mit dem OPSI-Paket selbst.
 
+
+<div id="voraussetzungen"></div>
+
+### Voraussetzungen ###
+
+Zur Erstellung der OPSI-Pakete aus den vorliegenden Quellen werden neben den
+**opsi-utils** noch weitere Tools benoetigt, die aus den Repositories der
+jeweiligen Distributionen zu beziehen sind.
+Das sind (angegebenen Namen entsprechen Paketen in Debian/Ubuntu):
+
+* make
+* python-pystache
+* wget
 
 
 <div id="makefile_und_spec"></div>
@@ -63,9 +92,14 @@ generiert werden sollen (intern, DFN; testing/release) wurde hierfuer ein
 **<code>Makefile</code>** erstellt. Darueber hinaus steuert **<code>spec.json</code>** 
 die Erstellung der Pakete.
 
-Im Idealfall ist beim Erscheinen einer neuen Release von JRE bzw. JDK lediglich
-**<code>spec.json</code>** anzupassen.
+Im Idealfall sind beim Erscheinen einer neuen Release von JRE bzw. JDK lediglich
+die jeweiligen json-Files anzupassen.
 
+Ohne explizite eines json-Files wird **<code>spec.json</code>** verwendet. Dies
+erstellt die generischen Java/JRE/JDK-Pakete ohne Angabe der Major-Release in
+der ProductId. Die <code>spec_java*.json</code> resultieren in Paketen, in denen
+Die Major-Release Bestandteil der ProductId ist. Dies ermoeglicht die parallele
+Installation mehrerer Java-Releases.
 
 
 <div id="pystache"></div>
@@ -96,10 +130,14 @@ Die <code>SRC</code>-Verzeichnisse sind in den OPSI-Paketen nicht mehr enthalten
 <div id="makefile_parameter"></div>
 
 ### Makefile-Parameter ###
-OPSI erlaubt des Pakete im Format <code>cpio</code> und <code>tar</code> zu erstellen.  
-Als Standard ist <code>cpio</code> festgelegt.  
-Das Makefile erlaubt die Wahl des Formates ueber die Umgebungsvariable bzw. den Parameter:
-> *<code>ARCHIVE_FORMAT=&lt;cpio|tar&gt;</code>*
+Der vorliegende Code erlaubt die Erstellung von OPSI-Paketen fuer die Java-Releases
+**8**, **9** und **10**. Die Auswahl erfolgt ueber das entsprechende *SPEC*-File.
+Mitgeliefert werden '''spec.json''' (Java8, ProductIds java/jre/jdk) sowie
+'''spec_java[8,9,10].json''' (ProductIds jeweils mit Major-Release):
+
+> *<code>SPEC=&lt;spec_file&gt;</code>*
+
+Ohne Angabe des Parameters werden die Pakete fuer Java 8 erstellt.
 
 Ueber einen weiteren Parameter laesst sich auch der Umfang des zu erstellenden 
 Paketes festlegen:
@@ -114,6 +152,19 @@ dessen Installation:
 > *<code>ALLINC=[true|false]</code>*
 
 Standard ist hier die Erstellung des leichtgewichtigen Paketes (```ALLINC=false```).
+Zuvor sollten jedoch die Installationspakte mit **```make download```** (ggf. unter
+Angabe eines Spec-Files) heruntergeladen werden, da diese fuer die Berechnung
+der Pruefsummen benoetigt werden.
+
+OPSI erlaubt des Pakete im Format <code>cpio</code> und <code>tar</code> zu erstellen.  
+Als Standard ist <code>cpio</code> festgelegt.  
+Das Makefile erlaubt die Wahl des Formates ueber die Umgebungsvariable bzw. den Parameter:
+> *<code>ARCHIVE_FORMAT=&lt;cpio|tar&gt;</code>*
+
+OPSI erlaubt des Pakete im Format <code>cpio</code> und <code>tar</code> zu erstellen.  
+Als Standard ist <code>cpio</code> festgelegt.  
+Das Makefile erlaubt die Wahl des Formates ueber die Umgebungsvariable bzw. den Parameter:
+> *<code>ARCHIVE_FORMAT=&lt;cpio|tar&gt;</code>*
 
 
 <div id="spec_json"></div>
@@ -137,11 +188,14 @@ Die Software selbst wird - sofern bei der Paketerstellung nicht anders vorgegebe
 entfaellt dieser Abschnitt.
 
 Bei der Installation des Paketes im Depot erfolgt im <code>postinst</code>-Script 
-der Download der Software vom Hersteller (Windows, 32 und 64 Bit).  
+der Download der Software vom Hersteller (Windows, 32 (sofern vorhanden) und 64 Bit).  
 Ein manueller Download sollte dann nicht erforderlich sein. 
 
-Das Gesamtvolumen der herunterzuladenden Dateien betraegt ca. **625 MByte**.
+Das Gesamtvolumen der herunterzuladenden Dateien betraegt je nach Paketvariante
+zwischen **135** und **655 MByte**.
 
+Da die Pakete von *lokalen Funktionen* Gebrauch machen, wird auf dem Depot-Server
+*opsi-winst* mindestens in der Version 4.12(.0.13) vorausgesetzt.
 
 
 <div id="allgemeines"></div>
@@ -158,19 +212,20 @@ koennen die verfuegbaren Properties abweichen.
 
 | Property | Type | Values | Default  | Multivalue | Editable | Description | Anmerkung |
 |----------|:----:|--------|----------|:----------:|:--------:|-------------|------|
-| jre_or_jdk | unicode | "JRE", "JDK" | "JRE" | False | False | Install only JRE or full JDK? (obsolete) | (obsolet, wird entfernt) |
 | install_jre | bool |  | True/False |  |  | Install Java Runtime Environment | Default abhaengig vom erstellten Paket |
 | install_jdk | bool |  | True/False |  |  | Install Java SE Developemnt Kit | Default abhaengig vom erstellten Paket |
 | install_jdk_doc | bool |  | False |  |  | Install Java SE Development Kit Documentation (only available for JDK) | verfuegbar falls JDK enthalten |
+| set_env_java_home | unicode | "yes", "no" | "no" | False | False | Set Environment JAVA_HOME and PATH to InstallDir of jdk or jre? |  |
 | web_java | unicode | "Disable", "Enable" | "Disable" | False | False | Allow Java applets in web browser? |  |
+| web_java_security_level | unicode | "H", "VH" | "VH" | False | False | Security level for Java applets in web browser if enabled |  |
 | install_architecture | unicode | "32 bit", "64 bit", "both", "sysnative" | "sysnative" | False | False | which architecture (32/64 bit) should be installed |  |
-| default_language | unicode | "de", "en-GB", "en-US" | "en-US" | False | False | application default language | fuer Java nicht relevant, inaktiv via spec.json | 
 | custom_post_install | unicode | "none", "custom_test.opsiinc", "post-install.opsiinc" | "none" | False | True | Define filename for include script in custom directory after installation |  |
 | custom_post_uninstall | unicode | "none", "custom_test.opsiinc", "post-uninstall.opsiinc" | "none" | False | True | Define filename for include script in custom directory after deinstallation |  |
 | log_level | unicode | "default", "1", "2", "3", "4", "5", "6", "7", "8", "9" | "default" | False | False | Loglevel for this package |  |
 | kill_running | bool |  | False |  |  | kill running instance (for software on_demand) | verfuegbar wenn in spec.json aktiviert |
-| kill_applic | unicode |  |  | True | True | Instead of killing java only, kill also these running applications | verfuegbar wenn in spec.json aktiviert |
-
+| kill_applic | unicode |  |  | True | True | Instead of killing only applications of this package, kill also these running applications; requires "kill_running; use suffix '.exe' or '%' as wildcard | verfuegbar wenn in spec.json aktiviert |
+| uninstall_before_setup | bool |  | True |  |  | Run uninstall before (re)installation | |
+| auto_update | unicode | "Disable", "Enable" | "Disable" | False | False | Shall Java update itself? |  |
 
 
 <div id="paketaufbau"></div>
@@ -181,6 +236,7 @@ koennen die verfuegbaren Properties abweichen.
 verwendet werden, werden diese (bis auf wenige Ausnahmen) zusammengefasst hier deklariert.
 * **<code>product_variables.opsiinc</code>** - die producktspezifischen Variablen werden
 hier definiert
+* **<code>helpers.opsifunc</code>** - Bibliothek mit lokalen (Hilfs-)Funktionen.
 * **<code>setup.opsiscript </code>** - Das Script fuer die Installation.
 * **<code>uninstall.opsiscript</code>** - Das Uninstall-Script
 * **<code>delsub.opsiinc</code>**- Wird von Setup und Uninstall gemeinsam verwendet.
@@ -210,6 +266,11 @@ wird der Praefix entfernt.
 Die Reihenfolge der Praefixes ist relevant; die Markierung als Testpaket ist 
 stets fuehrend.
 
+Suffix:
+
+* ~dl - Das Paket enthaelt die Installationsarchive selbst nicht. Diese werden
+erst bei der Installation im Depot vom <code>postinst</code>-Skript heruntergeladen.
+
 
 
 <div id="lizenzen"></div>
@@ -238,14 +299,10 @@ zuzustimmen.
 * JDK/JRE:
 > You must accept the [Oracle Binary Code License Agreement for Java SE](http://www.oracle.com/technetwork/java/javase/terms/license/index.html) to download this software.
 
-* JDK Dokumentation:
+* JDK 8/9/10 Dokumentation:
 > You must accept the [Java SE Development Kit 8 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase8speclicense-2158700.html) to download this software.
-
-* JavaFX API Documentation:
-> You must accept the [Oracle Legal Notices](http://docs.oracle.com/javase/7/docs/legal/cpyr.html) to download this software.
-
-* Demos/Samples:
-> You must accept the [Oracle BSD License](http://www.oracle.com/technetwork/java/javase/terms/license/oraclebsd-1603217.txt). to download this software.
+> You must accept the [Java SE Development Kit 9 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase9speclicense-3903847.html)
+> You must accept the [Java SE Development Kit 10 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase10speclicense-4417634.html)
 
 Die Installation dieses Paketes setzt voraus, dass der Nutzer dem Folge geleistet
 hat. Sollte den Lizenzbedingungen nicht zugestimmt werden, darf dieses Paket nicht
@@ -296,7 +353,7 @@ Vervielfaeltigung und Weitergabe nicht auf Gewinnerwirtschaftung oder Spendensam
 abzielt.
 
 Haftungsausschluss:  
-Der Auto lehnt ausdruecklich jede Haftung fuer eventuell durch die Nutzung 
+Der Autor lehnt ausdruecklich jede Haftung fuer eventuell durch die Nutzung 
 der Software entstandene Schaeden ab.  
 Es werden keine ex- oder impliziten Zusagen gemacht oder Garantien bezueglich
 der Eigenschaften, des Funktionsumfanges oder Fehlerfreiheit gegeben.  
@@ -327,10 +384,10 @@ weiterer freier Grafiken erstellt.
 
 ## Anmerkungen/ToDo ##
 
-Es fehlt noch:
+Bekannte Fehler:
 
-* Installation von jdk-*-docs-all.zip
-* weitere Features und Einstellungen...
+* Die Silent-Installation der JRE9 und JRE10 schlaegt immer mit dem MSI-Fehler 1603 fehl. Fehler im Paket?
+
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2017-11-24 16:52:51 +0100
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-03-27 09:43:01 +0200

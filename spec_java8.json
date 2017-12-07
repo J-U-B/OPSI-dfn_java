@@ -5,9 +5,9 @@
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
 	
-	"O_BASE_JAVA"       : "java",
-	"O_BASE_JRE"        : "jre",
-	"O_BASE_JDK"        : "jdk",
+	"O_BASE_JAVA"       : "java8",
+	"O_BASE_JRE"        : "jre8",
+	"O_BASE_JDK"        : "jdk8",
 	
 	"STAGE"             : "{{M_STAGE}}",
 	"TESTPREFIX"	    : "{{M_TESTPREFIX}}",

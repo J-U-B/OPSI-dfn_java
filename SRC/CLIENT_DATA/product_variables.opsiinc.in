@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:08:48 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 14:37:36 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -9,13 +9,15 @@ Set $MAP$ 				= getProductMap
 Set $FullProductId$     = getValue("id", $MAP$)
 Set $ProductName$   	= getValue("name", $MAP$)
 Set $Version$       	= getValue("ProductVersion", $MAP$)
+Set $ActionRequest$		= getValue("actionrequest", $MAP$)
 Set $SystemType$    	= GetSystemType
 Set $NTVersion$   		= GetMsVersionInfo
 
 ;-----------------------------------------------------------
 ;*** basic requirements
 ;-----------------------------------------------------------
-requiredWinstVersion >= "4.11.6"
+requiredWinstVersion >= "4.12.0.13"
+importlib "helpers.opsifunc"
 
 if not (CompareDotSeparatedNumbers($NTVersion$, ">=", "6.1"))
 	LogError "OS is not Windows 7 or above"
@@ -80,7 +82,13 @@ endif
 ;-----------------------------------------------------------
 ;*** software architecture; valid values: "32 bit", "64 bit", "sysnative", "both"
 ;-----------------------------------------------------------
+{{#ifdef_x64_only}}
+Set $sw_arch$ = "64 bit"
+{{/ifdef_x64_only}}
+{{^ifdef_x64_only}}
 Set $sw_arch$ = GetProductProperty("install_architecture","sysnative")
+{{/ifdef_x64_only}}
+
 Set $sw_arch$ = takeString(0, splitString($sw_arch$, " "))
 Set $InstallBase64$ = "%ProgramFiles64Dir%"
 Set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
@@ -141,6 +149,33 @@ set $CustomPostInstall$ 	= getProductProperty("custom_post_install","none")
 set $CustomPostUninstall$ 	= getProductProperty("custom_post_uninstall","none")
 
 ;-----------------------------------------------------------
+;*** misc properties:
+;-----------------------------------------------------------
+{{#ifdef_property_kill_running}}
+Set $bKillRunning 				= GetProductProperty("kill_running", "false")
+Set $Applications$ 				= GetProductPropertyList("kill_applic",emptylist($Applications$))
+{{/ifdef_property_kill_running}}
+Set $pr_PreUninst$				= GetProductProperty("uninstall_before_setup","True")
+
+Set $pr_WebJava$				= GetProductProperty("web_java","Disable")
+Set $pr_WebJavaSecurityLevel$	= GetProductProperty("web_java_security_level","VH")
+Set $pr_AutoUpdate$				= GetProductProperty("auto_update","Disable")
+Set $pr_SetEnv_JavaHome$		= GetProductProperty("set_env_java_home","no")
+
+if ($pr_AutoUpdate$ = "Disable")
+	Set $pr_Static$="1"
+else
+	Set $pr_Static$="0"
+endif
+
+;-----------------------------------------------------------
+;*** install documentation locally?
+;-----------------------------------------------------------
+{{#ifdef_property_jdk}}
+Set $pr_InstallJdkDoc$ = GetProductProperty("install_jdk_doc","False")
+{{/ifdef_property_jdk}}
+
+;-----------------------------------------------------------
 ;*** registry paths:
 ;-----------------------------------------------------------
 Set $RegPathUninstall$	 = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -159,6 +194,9 @@ Set $UninstallLog$     	 = $LogDir$ + "\"+$FullProductId$+"_uninstall.log"
 ;-----------------------------------------------------------
 Set $TempDir$			= "%opsiTmpDir%"
 set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail.exe"
+{{#ifdef_PSDETAIL_DEBUG}}
+set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail_debug.exe"
+{{/ifdef_PSDETAIL_DEBUG}}
 set $GETREALNAME$		= "%ScriptPath%\bin\GetRealName.exe"
 set $SEVENZIP$			= "%ScriptPath%\bin\7z.exe"
 ; changed to "true" on running sub_checkinstance_init:
@@ -189,15 +227,27 @@ ShowBitmap $Img_Prepare$ $ProductName$
 ;*** read install properties
 ;-----------------------------------------------------------
 {{#ifdef_property_jre}}
+  {{#ifdef_property_jdk}}
 set $bInstallJRE$ = getProductProperty("install_jre","false")
+  {{/ifdef_property_jdk}}
+  {{^ifdef_property_jdk}}
+set $bInstallJRE$ = "true"
+  {{/ifdef_property_jdk}}
 {{/ifdef_property_jre}}
+
 {{^ifdef_property_jre}}
 set $bInstallJRE$ = "false"
 {{/ifdef_property_jre}}
 
 {{#ifdef_property_jdk}}
+  {{#ifdef_property_jre}}
 set $bInstallJDK$ = getProductProperty("install_jdk","false")
+  {{/ifdef_property_jre}}
+  {{^ifdef_property_jre}}
+set $bInstallJDK$ = "true"
+  {{/ifdef_property_jre}}
 {{/ifdef_property_jdk}}
+
 {{^ifdef_property_jdk}}
 set $bInstallJDK$ = "false"
 {{/ifdef_property_jdk}}
@@ -213,46 +263,71 @@ Set $ProductDir$	= $PathPrefix$ + $StrippedProductId$
 Set $JAVA_VER$		= "{{JAVA_VER}}"
 ; Set $MainBin$      	= "bin\" + $StrippedProductId$ +".exe"
 Set $MainBin$      	= "bin\javaw.exe"
+Set $JavaMajor$		= "{{JAVA_RELEASE}}"
 
-{{#ifdef_property_jre}}
-Set $JRE_INSTALLER_32$	= "jre-{{JAVA_VER}}-windows-i586.exe"
-Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}-windows-x64.exe"
-Set $MinimumSpace$ 		= "200 MB"
-{{/ifdef_property_jre}}
-{{#ifdef_property_jdk}}
-Set $JDK_INSTALLER_32$	= "jdk-{{JAVA_VER}}-windows-i586.exe"
-Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}-windows-x64.exe"
-Set $MinimumSpace$ 		= "1000 MB"
-{{/ifdef_property_jdk}}
-
+Switch $JavaMajor$
+	Case "8"
+		{{#ifdef_property_jre}}
+		Set $JRE_INSTALLER_32$	= "jre-{{JAVA_VER}}-windows-i586.exe"
+		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}-windows-x64.exe"
+		Set $MinimumSpace$ 		= "200 MB"
+		{{/ifdef_property_jre}}
+		{{#ifdef_property_jdk}}
+		Set $JDK_INSTALLER_32$	= "jdk-{{JAVA_VER}}-windows-i586.exe"
+		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}-windows-x64.exe"
+		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}-docs-all.zip"
+		Set $MinimumSpace$ 		= "1000 MB"
+		{{/ifdef_property_jdk}}
+	EndCase
+	Case "9"
+		{{#ifdef_property_jre}}
+		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $MinimumSpace$ 		= "200 MB"
+		{{/ifdef_property_jre}}
+		{{#ifdef_property_jdk}}
+		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
+		Set $MinimumSpace$ 		= "1000 MB"
+		{{/ifdef_property_jdk}}
+	EndCase
+	Case "10"
+		{{#ifdef_property_jre}}
+		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $MinimumSpace$ 		= "200 MB"
+		{{/ifdef_property_jre}}
+		{{#ifdef_property_jdk}}
+		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
+		Set $MinimumSpace$ 		= "1000 MB"
+		{{/ifdef_property_jdk}}
+	EndCase
+	DefaultCase
+		LogError "Unsupported Java major release: " + $JavaMajor$
+		isFatalError	
+	EndCase
+EndSwitch
+	
 ; JRE x32: 		165 MB
 ; JRE x64: 		185 MB
 ; JDK x32:		~500 MB
 ; JDK x64:		~ 500 MB
-; Docs:			365 MB
+; Docs:			400 MB
 ; Demos x32:	 56 MB
 ; Demos x64:	 82 MB
 
 
 Set $JAVASETTINGSCFG$ = EnvVar("AllUsersProfile") + "\Oracle\Java\java.settings.cfg"
 
-Set $bWEBJAVA$ = GetProductProperty("WEB_JAVA", "Disabled")
 Set $JDK_FEATURES$ = 'ADDLOCAL="ToolsFeature,SourceFeature"'
 ;*** JRE is not required, so it won't be installed:
 ;Set $JDK_FEATURES$ = 'ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature"'
 ;*** for PublicjreFeature also "/INSTALLDIRPUBJRE=..." is needed! (note the leading "/")
 
-Set $Inst_Opts_JRE$	= " INSTALL_SILENT=1 STATIC=1 AUTO_UPDATE=0 REMOVEOUTOFDATEJRES=0 WEB_ANALYTICS=0 WEB_JAVA=" + $bWEBJAVA$ + " /LV* " + $InstallLog$ 
+Set $Inst_Opts_JRE$	= " INSTALL_SILENT=1 STATIC="+ $pr_Static$ +" AUTO_UPDATE="+ $pr_AutoUpdate$ +" REMOVEOUTOFDATEJRES=0 WEB_ANALYTICS=0 WEB_JAVA=" + $pr_WebJava$ + " WEB_JAVA_SECURITY_LEVEL="+ $pr_WebJavaSecurityLevel$ +" REBOOT=0 SPONSORS=0 /LV* " + $InstallLog$
 Set $Inst_Opts_JDK$	= $Inst_Opts_JRE$ + " " + $JDK_FEATURES$
 
-Set $SearchPattern_JRE$	   = "Java 8 Update"
-Set $SearchPattern_JDK$	   = "Java SE Development Kit 8 Update"
-
-
-;===================================================================
-;*** other/obsolete
-;===================================================================
-Set $ExDir$			= $ProductName$ + "-bin"
-Set $ExDirLong$		= "%opsiTmpDir%\" + $ProductName$ + "-bin\"
-Set $Archive$		= $ProductName$ + "." + $Version$ + ".x" + $sw_arch$ + ".7z"
+; Set $Uninst_Opts$	= "/qb-! /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
+Set $Uninst_Opts$	= "/qn /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
+Set $SearchPattern_JRE$	   = "Java " + $JavaMajor$ + " "
+Set $SearchPattern_JDK$	   = "Java* SE Development Kit " + $JavaMajor$
 

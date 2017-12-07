@@ -1,32 +1,33 @@
 {  
 	"_": "=== OPSI package variables ===",
 	"O_PKG_VER"         : "11",
-	"O_SOFTWARE_VER"    : "8.0.162.12",
+	"O_SOFTWARE_VER"    : "10.0.0",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
-	
-	"O_BASE_JAVA"       : "java",
-	"O_BASE_JRE"        : "jre",
-	"O_BASE_JDK"        : "jdk",
+
+	"O_BASE_JAVA"       : "java10",
+	"O_BASE_JRE"        : "jre10",
+	"O_BASE_JDK"        : "jdk10",
 	
 	"STAGE"             : "{{M_STAGE}}",
-	"TESTPREFIX"	    : "{{M_TESTPREFIX}}",
+	"TESTPREFIX"        : "{{M_TESTPREFIX}}",
 	"ORGPREFIX"         : "{{M_ORGPREFIX}}",
 	"ORGNAME"           : "{{M_ORGNAME}}",
-
+	
 	"_": "=== Variables for downloading Java ===",
-
+	
 	"_": "=== * JRE/JDK/Demos/Docs ===",
-	"JAVA_RELEASE": "8",
-	"JAVA_VER"    : "8u162",
-	"JAVA_BUILD"  : "b12",
-	"HASH"        : "0da788060d494f5095bf8624735fa2f1",
-
+	"JAVA_RELEASE": "10",
+	"JAVA_VER"    : "10",
+	"JAVA_BUILD"  : "46",
+	"HASH"        : "76eac37278c24557a3c4199677f19b62",
+	
 	"_":"=== conditions ===",
+	"ifdef_x64_only"				:true,
 	"ifdef_auto_download"           :true,
 	
-	"ifdef_testing"                 :{{M_TESTING}},	
-	"ifdef_allinc"                  :{{M_ALLINC}},	
+	"ifdef_testing"                 :{{M_TESTING}}, 
+	"ifdef_allinc"                  :{{M_ALLINC}},
 	
 	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
@@ -38,7 +39,6 @@
 	"_":"=== some tuning ===",
 	"DEFAULT_TESTING_LOGLEVEL" : "7",
 	"DEFAULT_RELEASE_LOGLEVEL" : "5",
-	"ifdef_PSDETAIL_DEBUG"     : true,
 	
 	"_":""
 }

@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-28 15:10:09 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 16:14:05 +0200
 ;======================================================================
 
 ;======================================================================
@@ -74,8 +74,6 @@ else
 			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
 			
 			Sub_Install	
-			
-			;***** ToDo: Documentation, Demos *****	
 		endif
 		{{/ifdef_property_jdk}}
 	
@@ -102,19 +100,55 @@ else
 			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
 			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
 						
-			Sub_Install	
-			
-			;***** ToDo: Documentation, Demos *****		
+			Sub_Install		
 		endif
 		{{/ifdef_property_jdk}}
 	
 	endif	
 	
+	{{#ifdef_property_jdk}}
+	if ($bInstallJDK$ = "true") AND ($pr_InstallJdkDoc$ = "true")
+		ShowBitmap $Img_Addons$ $ProductName$
+		message "Installing JDK Documantation " + $Version$
+		if FileExists($SrcDir$ + $JDK_DOC$)
+			if FileExists($InstallDir$)
+				ShellInAnIcon_unzip_JDK_doc
+				Set $ExitCode$ = getLastExitCode
+				if not($ExitCode$ = "0")
+					logError "Unpacking JDK docs has caused error " + $ExitCode$
+				else
+					if FileExists($InstallDir$ + "\docs\index.html")
+						LinkFolder_JDK_Docs
+					endif
+				endif
+			else
+				logError "Target directory for JDK docs does not exist. (JDK installation failed?)"
+			endif
+		else
+			logError "Can't find JDK docs archive: " + $JDK_DOC$
+		endif
+		ShowBitmap $Img_Install$ $ProductName$
+	endif
+	{{/ifdef_property_jdk}}
 		
 	;=== disable JAVA auto update
 	Registry_disable_update	
-
 	
+	
+	;===set environment variables if requested
+	if ($pr_SetEnv_JavaHome$ = "yes")
+		Comment "Set environment variables JAVA_HOME and PATH"
+		; if install_architecture is set to both, use 64 bit as target
+		; if JRE and JDK are installed, use JDK as target
+		set $JAVA_HOME$ = $InstallDir$
+		; ...just the last one in our install order (jre32, jdk32, jre64,jdk64)
+		set $res$ = setEnvVar("JAVA_HOME", $JAVA_HOME$, "REG_SZ")
+		set $PATH$ = getEnvVar("PATH")
+		set $PATH$ = addPath($PATH$, "%JAVA_HOME%\bin")
+		set $res$ = setEnvVar("PATH", $PATH$, "REG_EXPAND_SZ")
+	endif
+	
+
 	;=== custom post install
 	comment "include custom post install file"
 	if not ($CustomPostInstall$ = "none")
@@ -170,9 +204,30 @@ endif
  
  
 ;=====================================================================
+[ShellInAnIcon_unzip_JDK_doc]
+;===================================================================== 
+$SEVENZIP$ x -o$InstallDir$  $SrcDir$$JDK_DOC$ 
+exit $?
+ 
+ 
+;=====================================================================
+[LinkFolder_JDK_Docs]
+;=====================================================================
+set_basefolder common_programs
+set_subfolder "Java Development Kit"
+set_link
+	name: JDK $Version$ Documentation
+	target: $InstallDir$\docs\index.html
+	working_dir: $InstallDir$\docs
+	icon_file: $InstallDir$\bin\javaw.exe
+	icon_index:
+end_link
+	
+	
+;=====================================================================
 [ShellInAnIcon_FW_JAVA]
 ;=====================================================================
-netsh advfirewall firewall add rule name="Java8" dir=in action=block program="$program_real$" description="Blocking javaw.exe"
+netsh advfirewall firewall add rule name="Java$JavaMajor$" dir=in action=block program="$program_real$" description="Blocking javaw.exe"
 
  
 ;=====================================================================

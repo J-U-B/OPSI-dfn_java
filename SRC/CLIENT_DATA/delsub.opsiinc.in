@@ -2,7 +2,7 @@
 ; delsub.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2017-08-24 16:14:49 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 16:13:05 +0200
 ;======================================================================
 
 ;=======================================
@@ -47,13 +47,11 @@ if not ( count ($ResultList$) = "0" )
 	;=== check for / kill running applications:
 	if ($bCheckInstance$ = "true")
 		
-		set $Applications$ = GetProductPropertyList("kill_applic",emptylist($Applications$))
 		if not ( count ($Applications$) = "0" )
 			set $PSDETAIL_MODE$ = "name"
 			for %app% in $Applications$ do sub_kill_Applic
 		endif
 		
-		set $bKillRunning = GetProductProperty("kill_running", "false")
 		if ($bKillRunning = "true")
 			set $PSDETAIL_MODE$ = "exe"
 			{{#ifdef_property_jre}}
@@ -68,22 +66,36 @@ if not ( count ($ResultList$) = "0" )
 	endif
 	{{/ifdef_property_kill_running}}
 	
-	;=== process uninstall for all found uninstall sections:
-	for %id% in $ResultList$ do sub_Uninstall_ID
-	
-	;=== custom post uninstall
-	comment "include custom post uninstall file"
-	if not ($CustomPostUninstall$ = "none")
-		if FileExists("%ScriptPath%\custom\" + $CustomPostUninstall$)
-			ShowBitmap $Img_Uninstall_Custom$ $ProductName$
-			include_insert "%ScriptPath%\custom\" + $CustomPostUninstall$
-			ShowBitmap $Img_Uninstall$ $ProductName$
+	if ($ActionRequest$="uninstall") OR ($pr_PreUninst$ = "True")
+		;=== process uninstall for all found uninstall sections:
+		for %id% in $ResultList$ do sub_Uninstall_ID
+		
+		if ($pr_SetEnv_JavaHome$ = "yes")
+			Comment "Delete environment variable JAVA_HOME and remove from PATH"
+			set $JAVA_HOME$ = getEnvVar("JAVA_HOME")
+			set $res$ = delEnvVar("JAVA_HOME")
+			set $PATH$ = getEnvVar("PATH")
+			set $PATH$ = removePath($PATH$, $JAVA_HOME$ + "\bin")
+			set $PATH$ = removePath($PATH$, "%JAVA_HOME%\bin")
+			set $res$ = setEnvVar("PATH", $PATH$, "REG_EXPAND_SZ")
 		endif
-	endif	
-	
-	;=== measure time
-	set $TimeDiff$ = getDiffTimeSec
-	Message  "Removal time: " + $TimeDiff$ + " seconds"	
+		
+		;=== custom post uninstall
+		comment "include custom post uninstall file"
+		if not ($CustomPostUninstall$ = "none")
+			if FileExists("%ScriptPath%\custom\" + $CustomPostUninstall$)
+				ShowBitmap $Img_Uninstall_Custom$ $ProductName$
+				include_insert "%ScriptPath%\custom\" + $CustomPostUninstall$
+				ShowBitmap $Img_Uninstall$ $ProductName$
+			endif
+		endif	
+		
+		;=== measure time
+		set $TimeDiff$ = getDiffTimeSec
+		Message  "Removal time: " + $TimeDiff$ + " seconds"	
+	else
+		comment "Uninstallation skipped"
+	endif
 	
 else
 	comment "Empty result list while searching for " + $ProductName$ + " in registry - does not seem to be installed"
@@ -134,6 +146,15 @@ Message "Uninstalling previous setup of " + $DisplayName$
 ;=== check uninstall directory
 sub_check_PathVar
 
+;=== uninstall documentation (if exists)
+if FileExists($Uninst_RegDir$ + "\docs")
+	comment "Removing local documentation"
+	LinkFolder_del_JDK_Docs
+	setlogLevel = 5
+	Files_del_DocsDir
+	setlogLevel = $LogLevelDefault$
+endif	
+
 ;=== run uninstaller
 Winbatch_Uninstall_MSI
 sub_check_exitcode_msi
@@ -160,7 +181,35 @@ endif
 ;======================================================================
 [Winbatch_Uninstall_MSI]
 ;======================================================================
-msiexec /qb-! /liwemo+ "$UninstallLog$" /X $Uninst_ID$ REBOOT=ReallySuppress
+msiexec /X $Uninst_ID$ $Uninst_Opts$
+
+
+;=====================================================================
+[LinkFolder_del_JDK_Docs]
+;=====================================================================
+set_basefolder common_programs
+set_subfolder "Java Development Kit"
+delete_element "JDK $Inst_Ver$ Documentation"
+
+
+;======================================================================
+[Files_del_DocsDir]
+;======================================================================
+delete -sfc "$Uninst_RegDir$\docs"
+
+
+;=====================================================================
+[LinkFolder_del_JDK_Docs]
+;=====================================================================
+set_basefolder common_programs
+set_subfolder "Java Development Kit"
+delete_element "JDK $Inst_Ver$ Documentation"
+
+
+;======================================================================
+[Files_del_DocsDir]
+;======================================================================
+delete -sfc "$Uninst_RegDir$\docs"
 
 
 ;======================================================================
