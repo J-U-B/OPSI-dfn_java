@@ -1,4 +1,4 @@
-# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8/9/10") JAVA8 / JAVA9 / JAVA 10#
+# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8/9/10") JAVA8 / JAVA9 / JAVA 10
 
 ## ToC ##
 
@@ -155,11 +155,6 @@ Standard ist hier die Erstellung des leichtgewichtigen Paketes (```ALLINC=false`
 Zuvor sollten jedoch die Installationspakte mit **```make download```** (ggf. unter
 Angabe eines Spec-Files) heruntergeladen werden, da diese fuer die Berechnung
 der Pruefsummen benoetigt werden.
-
-OPSI erlaubt des Pakete im Format <code>cpio</code> und <code>tar</code> zu erstellen.  
-Als Standard ist <code>cpio</code> festgelegt.  
-Das Makefile erlaubt die Wahl des Formates ueber die Umgebungsvariable bzw. den Parameter:
-> *<code>ARCHIVE_FORMAT=&lt;cpio|tar&gt;</code>*
 
 OPSI erlaubt des Pakete im Format <code>cpio</code> und <code>tar</code> zu erstellen.  
 Als Standard ist <code>cpio</code> festgelegt.  

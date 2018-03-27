@@ -198,20 +198,6 @@ delete_element "JDK $Inst_Ver$ Documentation"
 delete -sfc "$Uninst_RegDir$\docs"
 
 
-;=====================================================================
-[LinkFolder_del_JDK_Docs]
-;=====================================================================
-set_basefolder common_programs
-set_subfolder "Java Development Kit"
-delete_element "JDK $Inst_Ver$ Documentation"
-
-
-;======================================================================
-[Files_del_DocsDir]
-;======================================================================
-delete -sfc "$Uninst_RegDir$\docs"
-
-
 ;======================================================================
 [Files_del_InstallDir]
 ;======================================================================
