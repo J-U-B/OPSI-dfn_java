@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-04 14:29:29 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-04 15:00:46 +0200
 ;======================================================================
 
 ;======================================================================
@@ -52,10 +52,6 @@ else
 	Message "Installing " + $ProductName$ + " " + $Version$
 	marktime
 	
-	;Comment "Preparing ShellFolder workaround for JRE>=9"
-	;...is not sufficient
-	;set $res$ = setShellfolderEnv(0)
-		
 	if contains($sw_arch$,"32")
 		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
 	
