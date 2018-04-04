@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 16:14:05 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-04 14:29:29 +0200
 ;======================================================================
 
 ;======================================================================
@@ -50,30 +50,42 @@ else
 	;=== Start the installation
 	ShowBitmap $Img_Install$ $ProductName$
 	Message "Installing " + $ProductName$ + " " + $Version$
-	marktime	
+	marktime
+	
+	;Comment "Preparing ShellFolder workaround for JRE>=9"
+	;...is not sufficient
+	;set $res$ = setShellfolderEnv(0)
 		
 	if contains($sw_arch$,"32")
 		;set $InstallDir$ 	= $InstallBase32$ + "\" + $PathPrefix$
 	
 		{{#ifdef_property_jre}}
 		if ($bInstallJRE$ = "true")
-			message "Installing JRE " + $Version$ + " (32 bit)"
-			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_32$
-			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
-			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
-			
-			Sub_Install
+			if (CompareDotSeparatedNumbers($Version$, "<", "9.0"))
+				message "Installing JRE " + $Version$ + " (32 bit)"
+				set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_32$
+				set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
+				set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
+				
+				Sub_Install
+			else
+				logWarning "JRE " + $Version$ + " is only available in 64 bit."
+			endif
 		endif
 		{{/ifdef_property_jre}}
 		
 		{{#ifdef_property_jdk}}
 		if ($bInstallJDK$ = "true")
-			message "Installing JDK " + $Version$ + " (32 bit)"
-			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_32$
-			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
-			set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
-			
-			Sub_Install	
+			if (CompareDotSeparatedNumbers($Version$, "<", "9.0"))
+				message "Installing JDK " + $Version$ + " (32 bit)"
+				set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_32$
+				set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
+				set $InstallDir$ 		= $InstallBase32$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
+				
+				Sub_Install	
+			else
+				logWarning "JDK " + $Version$ + " is only available in 64 bit."
+			endif				
 		endif
 		{{/ifdef_property_jdk}}
 	
@@ -84,12 +96,50 @@ else
 	
 		{{#ifdef_property_jre}}
 		if ($bInstallJRE$ = "true")
-			message "Installing JRE " + $Version$ + " (64 bit)"
-			set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_64$
-			set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
-			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
-			
-			Sub_Install
+			if (CompareDotSeparatedNumbers($Version$, "<", "9.0"))
+				message "Installing JRE " + $Version$ + " (64 bit)"
+				set $INSTALLER$ 		= $SrcDir$ + $JRE_INSTALLER_64$
+				set $INSTALL_OPTIONS$	= $Inst_Opts_JRE$
+				set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
+				
+				Sub_Install
+			else
+				; workaround for bodged JRE 9/10
+				message "Processing workaround: Extracting MSI from executable"
+				set $res$ = powershellGetExecPolicy($PWSH_EXECPOL$)
+				if (lower($PWSH_EXECPOL$) = "unrestricted") OR (lower($PWSH_EXECPOL$) = "remotesigned")
+					comment "Powershell execution policy is already set to: " + $PWSH_EXECPOL$
+				else
+					set $res$ = powershellSetExecPolicy("remotesigned")
+					if not($res$ = "0") 
+						LogError "Setting Powershell execution policy returns: " + $res$
+					endif
+				endif 
+				
+				; extract MSI from EXE
+				ExecWith_PS__ExtractMSI powershell.exe  WINST /SysNative
+				set $JRE_MSI$ = "%opsiTmpDir%\jre" +$JAVA_VER$ + "full.msi"
+				if not (fileExists($JRE_MSI$))
+					set $JRE_MSI$ = "%opsiTmpDir%\jre" +$JAVA_VER$ + "full64.msi"
+				endif
+				if (fileExists($JRE_MSI$))
+					message "Installing JRE " + $Version$ + " MSI (64 bit)"
+					set $INSTALLER$ 		= $JRE_MSI$ 
+					set $INSTALL_OPTIONS$	= $Inst_Opts_MSI_JRE$
+					set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
+					Sub_Install
+					Files_delete_MSI
+				else
+					logError "File not found: " + $JRE_MSI$
+				endif
+				
+				; ...restore execution policy
+				set $res$ = powershellSetExecPolicy($PWSH_EXECPOL$)
+				if not($res$ = "0") 
+						LogError "Setting Powershell execution policy returns: " + $res$
+				endif	
+				; ...end of JRE 9/10 workaround
+			endif
 		endif
 		{{/ifdef_property_jre}}
 		
@@ -109,7 +159,7 @@ else
 	{{#ifdef_property_jdk}}
 	if ($bInstallJDK$ = "true") AND ($pr_InstallJdkDoc$ = "true")
 		ShowBitmap $Img_Addons$ $ProductName$
-		message "Installing JDK Documantation " + $Version$
+		message "Installing JDK Documentation " + $Version$
 		if FileExists($SrcDir$ + $JDK_DOC$)
 			if FileExists($InstallDir$)
 				ShellInAnIcon_unzip_JDK_doc
@@ -173,8 +223,12 @@ endif
 if not (FileExists($INSTALLER$))
 	logError "Installer not found: [" + $INSTALLER$ + "]"
 	isFatalError
-endif		
-Winbatch_Install
+endif
+if (lower(takestring(-1, splitstring($INSTALLER$,'.'))) = "msi"	)	
+	Winbatch_MSI_Install
+else
+	Winbatch_Install
+endif
 sub_check_exitcode_msi
 
 ;-----------------------------------------------------------
@@ -201,6 +255,12 @@ endif
 [Winbatch_Install]
 ;=====================================================================
 "$INSTALLER$" INSTALLDIR="$InstallDir$" $INSTALL_OPTIONS$ 
+
+
+;=====================================================================
+[Winbatch_MSI_Install]
+;=====================================================================
+msiexec /qn /i "$INSTALLER$" INSTALLDIR="$InstallDir$" $INSTALL_OPTIONS$ 
  
  
 ;=====================================================================
@@ -247,4 +307,68 @@ SaveToFile "$JAVASETTINGSCFG$"
 ;=====================================================================
 OpenKey [HKEY_LOCAL_MACHINE\SOFTWARE\JavaSoft\Java Update\Policy]
 Set "EnableJavaUpdate"=REG_DWORD:0
+
+
+;=====================================================================
+[Files_delete_MSI]
+;=====================================================================
+del -f "$JRE_MSI$"
+
+
+;=====================================================================
+[ExecWith_PS__ExtractMSI]
+;=====================================================================
+#====================================================================
+# Extrahieren des MSI-Paketes fuer JRE9/10 aus dem EXE-Installer 
+# (Installation im System-Kontext)
+# 
+# req.: PowerShell 2.0
+#
+# Jens Boettge <boettge@mpi-halle.mpg.de>  2018-03-29 - 2018-04-04
+#====================================================================
+$jre_installer = "$SrcDir$\$JRE_INSTALLER_64$"
+$jre_inst_args = "INSTALL_SILENT=1 REBOOT=0 /LV* %SystemDrive%\tmp\jre$JAVA_VER$_install_exe.log"
+$tgt_dir = "%opsiTmpDir%"
+# $tmp_dir = $env:LOCALAPPDATA + "Low\Oracle\Java\jre$JAVA_VER$_x64"
+$tmp_dir = $env:SYSTEMROOT + "\system32\config\systemprofile\AppData\LocalLow\Oracle\Java\jre$JAVA_VER$_x64"
+$DBG=$false
+
+write-host "JRE temporary directory: $tmp_dir`r"
+write-host "MSI target directory   : $tgt_dir`r"
+write-host "EXE installer          : $jre_installer`r"
+
+if (-not (Test-Path -PathType Container $tgt_dir ))
+{
+    New-Item -Path $tgt_dir -ItemType Directory | out-null
+}
+
+$files_done=@()
+$app = Start-Process $jre_installer -ArgumentList $jre_inst_args -PassThru -ErrorAction SilentlyContinue
+while (get-process -id $app.id -erroraction SilentlyContinue)
+{
+    sleep(0.2)
+    if (-not ($DBG)) {write-host "." -NoNewline}
+    #Get-ChildItem -Path $tmp_dir -File  -attributes !Temporary -filter 'jre*.msi' -ErrorAction SilentlyContinue | foreach  {
+    Get-ChildItem -Path $tmp_dir -filter 'jre*.msi' -ErrorAction SilentlyContinue| foreach  {
+        $s=$_.name
+        if ($DBG) {write-host "* $s"} 
+        if ( (-not($_.PSIsContainer))  -and (-not($files_done -contains $s)) ) 
+        { 
+            write-host "`rCopying $s to $tgt_dir"
+            Copy-Item -force -Path $tmp_dir\$s -Destination $tgt_dir\
+            $files_done+=$s
+        }  
+    }
+}
+
+if (($app) -and ($app.HasExited))
+{
+    write-host $app.ExitCode
+    $msg = "`rDone with exit code: {0}" -f $app.ExitCode
+    write-host $msg
+    exit $app.ExitCode
+} else { 
+    write-host "`rInstaller is still running!"
+    exit -1
+}
 

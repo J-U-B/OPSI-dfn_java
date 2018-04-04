@@ -11,6 +11,7 @@
   * [Makefile-Parameter](#makefile_parameter)
   * [spec.json](#spec_json)
 * [Installation](#installation)
+  * [Abhaengigkeiten](#abhaengigkeiten)
 * [Allgemeines](#allgemeines)
   * [Properties](#properties)
   * [Aufbau des Paketes](#paketaufbau)
@@ -193,6 +194,21 @@ Da die Pakete von *lokalen Funktionen* Gebrauch machen, wird auf dem Depot-Serve
 *opsi-winst* mindestens in der Version 4.12(.0.13) vorausgesetzt.
 
 
+<div id="abhaengigkeiten"></div>
+
+### Abhaengigkeiten ###
+
+Die automatisierte Installation der JRE wurde von Oracle ab der Version 9 erschwert.
+Ohne technische Notwendigkeit gelingt dies nur mit dem MSI-Paket. Fuer diese
+Versionen ist es daher zunaechst erforderlich das MSI-Paket aus dem ausfuehrbaren
+Installationspaket zu extrahieren.  
+Das hierfuer eingesetzte Script-Modul verwendet die **PowerShell** (ab Version 2.0).
+
+Darueber hinaus wird fuer weitere Hilfsprogramme ([psDetail](#licPsDetail) und 
+[GetRealName](#licGetRealName)) das **.NET-Framework** ab der Version 3.5 benoetigt.
+
+
+
 <div id="allgemeines"></div>
 
 ## Allgemeines ##
@@ -320,7 +336,7 @@ Vervielfaeltigung und Weitergabe nicht auf Gewinnerwirtschaftung oder Spendensam
 abzielt.
 
 Haftungsausschluss:  
-Der Auto lehnt ausdruecklich jede Haftung fuer eventuell durch die Nutzung 
+Der Autor lehnt ausdruecklich jede Haftung fuer eventuell durch die Nutzung 
 der Software entstandene Schaeden ab.  
 Es werden keine ex- oder impliziten Zusagen gemacht oder Garantien bezueglich
 der Eigenschaften, des Funktionsumfanges oder Fehlerfreiheit gegeben.  
@@ -381,8 +397,8 @@ weiterer freier Grafiken erstellt.
 
 Bekannte Fehler:
 
-* Die Silent-Installation der JRE9 und JRE10 schlaegt immer mit dem MSI-Fehler 1603 fehl. Fehler im Paket?
+<s>* Die Silent-Installation der JRE9 und JRE10 schlaegt immer mit dem MSI-Fehler 1603 fehl. Fehler im Paket?</s>
 
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-03-27 09:43:01 +0200
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-04-04 14:56:52 +0200
