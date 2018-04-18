@@ -194,6 +194,13 @@ default: True
 
 
 [Changelog]
+{{O_BASE_JAVA}}-(8.0.171.11|9.0.4.11|10.0.1.10)-12:
+	* product updates
+	* alternative spec_java8_xx2.json
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-04-18 08:21:52 +0200
+
+
 {{O_BASE_JAVA}}-(8.0.162.12|9.0.4.11|10.0.0.46)-12:
 	* Support for standalone JRE 9/10
 		* extract MSI from executable installer (PowerShell)
