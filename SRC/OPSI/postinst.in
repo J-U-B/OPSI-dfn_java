@@ -75,9 +75,13 @@ if [ -d $TMP_DIR ]; then
 	for DIRNAME in custom files; do
 		echo "* [${DIRNAME}]"
 		if [ -d $TMP_DIR/${DIRNAME} ]; then
-			test -e $CLIENT_DATA_DIR/${DIRNAME} && rm -rf $CLIENT_DATA_DIR/${DIRNAME}
+			# test -e $CLIENT_DATA_DIR/${DIRNAME} && rm -rf $CLIENT_DATA_DIR/${DIRNAME}
 			echo -e "\tmoving $TMP_DIR/${DIRNAME} to $CLIENT_DATA_DIR/"
-			mv $TMP_DIR/${DIRNAME} $CLIENT_DATA_DIR/ || exit 1	
+			if [ -d $CLIENT_DATA_DIR/${DIRNAME} ]; then
+				mv $TMP_DIR/${DIRNAME}/* $CLIENT_DATA_DIR/${DIRNAME}/ && rmdir $TMP_DIR/${DIRNAME} || exit 1	
+			else
+				mv $TMP_DIR/${DIRNAME} $CLIENT_DATA_DIR/ || exit 1	
+			fi 
 		else
 			echo -e "\tdoes not exist here"
 		fi

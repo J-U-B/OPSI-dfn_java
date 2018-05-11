@@ -3,7 +3,7 @@
 ; This file contains all possible variables, excluding the opsi-system
 ; variables, for the opsi-winst scripts in use.
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-03 17:19:32 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-05-11 09:09:05 +0200
 ;======================================================================
 
 DefStringList $Applications$
@@ -112,6 +112,7 @@ DefVar $UninstallLog$
 DefVar $UninstallString$
 DefVar $Uninst_Arch$
 DefVar $Uninst_ID$
+DefVar $Uninst_Major$
 DefVar $Uninst_Opts$
 DefVar $Uninst_RegDir$
 DefVar $Version$

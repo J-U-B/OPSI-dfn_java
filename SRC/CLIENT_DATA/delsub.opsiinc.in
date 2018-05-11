@@ -2,7 +2,7 @@
 ; delsub.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-03-26 16:13:05 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-05-11 09:25:34 +0200
 ;======================================================================
 
 ;=======================================
@@ -116,12 +116,14 @@ Switch $Uninst_Arch$
 			set $Inst_Loc$ 			= GetRegistryStringValue32($RegKey$ + " InstallLocation")
 			set $Inst_Ver$ 			= GetRegistryStringValue32($RegKey$ + " DisplayVersion")
 			set $UninstallString$  	= GetRegistryStringValue32($RegKey$ + " UninstallString")
+			set $Uninst_Major$		= GetRegistryStringValue32($RegKey$ + " VersionMajor")
 	EndCase
 	Case "x64"
 			set $DisplayName$    	= GetRegistryStringValue64($RegKey$ + " DisplayName")
 			set $Inst_Loc$ 			= GetRegistryStringValue64($RegKey$ + " InstallLocation")
 			set $Inst_Ver$ 			= GetRegistryStringValue64($RegKey$ + " DisplayVersion")
 			set $UninstallString$   = GetRegistryStringValue64($RegKey$ + " UninstallString")
+			set $Uninst_Major$		= GetRegistryStringValue64($RegKey$ + " VersionMajor")
 	EndCase
 	DefaultCase
 			Comment "Invalid architecture for " + $Uninst_ID$ + " given: " + $Uninst_Arch$
@@ -131,6 +133,11 @@ EndSwitch
 if ($UninstallString$ = "") 
 	LogWarning "Missing UninstallString for [%id%] -- skipping"
 	Comment "Removing malformed key"
+	if ($Uninst_Arch$ = "x32")
+		Registry_del_Key /32Bit
+	else
+		Registry_del_Key /64Bit
+	endif
 else
 	comment "Start uninstall sub section for " + $DisplayName$ + " "  + $Inst_Ver$ + " (" + $Uninst_Arch$ + ")"
 	Sub_Uninstall_Package
@@ -166,6 +173,9 @@ if ($ExitCode$ INT = "0") and not ($Uninst_RegDir$ = "")
 		;=== try final cleanup
 		Files_del_InstallDir
 	endif
+	;=== remove old firewall rule
+	comment "Removing Java" + $Uninst_Major$ + " firewall rule(s)"
+	set $OutStream$ = getOutStreamFromSection('ShellInAnIcon_del_FW_JAVA')
 endif	
 
 
@@ -234,3 +244,14 @@ else
 	endif
 endif
 
+
+;=====================================================================
+[ShellInAnIcon_del_FW_JAVA]
+;=====================================================================
+netsh advfirewall firewall delete rule name="Java$Uninst_Major$"
+
+
+;=====================================================================
+[Registry_del_Key]
+;=====================================================================
+deletekey $RegKey$

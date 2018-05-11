@@ -194,6 +194,21 @@ default: True
 
 
 [Changelog]
+{{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-14:
+	* remove old firewall rules on uninstall
+	* delete broken uninstall keys
+	* fix uninstall registry search pattern for JRE
+	* small improvements in powershell script
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 12:54:11 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-13:
+	* Postinst-Fix for all inclusive packages
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-09 12:16:48 +0200
+
+
 {{O_BASE_JAVA}}-(8.0.171.11|9.0.4.11|10.0.1.10)-12:
 	* product updates
 	* alternative spec_java8_xx2.json

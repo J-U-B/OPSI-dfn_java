@@ -330,6 +330,10 @@ Set $Inst_Opts_JDK$	= $Inst_Opts_JRE$ + " " + $JDK_FEATURES$
 
 ; Set $Uninst_Opts$	= "/qb-! /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
 Set $Uninst_Opts$	= "/qn /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
-Set $SearchPattern_JRE$	   = "Java " + $JavaMajor$ + " "
+if ( $JavaMajor$ INT<= "8")
+	Set $SearchPattern_JRE$	   = "Java " + $JavaMajor$ + " "
+else
+	Set $SearchPattern_JRE$	   = "Java " + $JavaMajor$ + "."
+endif
 Set $SearchPattern_JDK$	   = "Java* SE Development Kit " + $JavaMajor$
 

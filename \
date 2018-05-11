@@ -1,0 +1,15 @@
+Java-(8.0.171.11|9.0.4.11|10.0.1.10)-12
+	* product updates
+	* alternative spec_java8_xx2.json
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	modified:   SRC/OPSI/control.in
+#	modified:   spec.json
+#	modified:   spec_java10.json
+#	modified:   spec_java8.json
+#	new file:   spec_java8_xx2.json
+#

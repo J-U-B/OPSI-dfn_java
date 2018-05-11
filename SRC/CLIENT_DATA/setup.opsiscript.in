@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-04 15:00:46 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-05-11 12:53:18 +0200
 ;======================================================================
 
 ;======================================================================
@@ -114,6 +114,18 @@ else
 				
 				; extract MSI from EXE
 				ExecWith_PS__ExtractMSI powershell.exe  WINST /SysNative
+				set $ExitCode$ = getLastExitCode
+				if not ($ExitCode$ = "0")
+					LogError "powershell script failed with exit code " + $ExitCode$
+					isFatalError
+				endif
+				
+				; ...restore execution policy
+				set $res$ = powershellSetExecPolicy($PWSH_EXECPOL$)
+				if not($res$ = "0") 
+						LogError "Setting Powershell execution policy returns: " + $res$
+				endif
+				
 				set $JRE_MSI$ = "%opsiTmpDir%\jre" +$JAVA_VER$ + "full.msi"
 				if not (fileExists($JRE_MSI$))
 					set $JRE_MSI$ = "%opsiTmpDir%\jre" +$JAVA_VER$ + "full64.msi"
@@ -127,13 +139,8 @@ else
 					Files_delete_MSI
 				else
 					logError "File not found: " + $JRE_MSI$
+					isFatalError
 				endif
-				
-				; ...restore execution policy
-				set $res$ = powershellSetExecPolicy($PWSH_EXECPOL$)
-				if not($res$ = "0") 
-						LogError "Setting Powershell execution policy returns: " + $res$
-				endif	
 				; ...end of JRE 9/10 workaround
 			endif
 		endif
@@ -350,21 +357,38 @@ while (get-process -id $app.id -erroraction SilentlyContinue)
         if ($DBG) {write-host "* $s"} 
         if ( (-not($_.PSIsContainer))  -and (-not($files_done -contains $s)) ) 
         { 
-            write-host "`rCopying $s to $tgt_dir"
+            write-host "`rCopying $s to $tgt_dir`r"
             Copy-Item -force -Path $tmp_dir\$s -Destination $tgt_dir\
             $files_done+=$s
         }  
     }
 }
 
+$cnt=$files_done.Count
+if ($cnt -gt 0)
+{
+	write-host "`r$cnt file(s) written to $tgt_dir`r"
+	$files_done | foreach { 
+		$ex = if (Test-Path "$tgt_dir\$_" -PathType Leaf) {"[OK]"} Else {"[missing]"}
+		write-host "`t$_`t$ex`r"
+	}
+}
+else
+{
+	write-host "`rNo files written to $tgt_dir`r"
+}
+
 if (($app) -and ($app.HasExited))
 {
-    write-host $app.ExitCode
-    $msg = "`rDone with exit code: {0}" -f $app.ExitCode
-    write-host $msg
-    exit $app.ExitCode
+    if ($app.ExitCode)
+    {
+       write-host $app.ExitCode
+       $msg = "`rDone with exit code: {0}`r" -f $app.ExitCode
+       write-host $msg
+       exit $app.ExitCode
+    }
 } else { 
-    write-host "`rInstaller is still running!"
+    write-host "`rInstaller is still running!`r"
     exit -1
 }
 
