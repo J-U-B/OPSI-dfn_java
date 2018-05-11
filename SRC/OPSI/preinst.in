@@ -7,7 +7,7 @@
 #   PRODUCT_ID: id of the current product
 #   CLIENT_DATA_DIR: directory where client data will be installed
 #===================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2018-02-19 11:03:57 +0100
+# J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 15:41:33 +0200
 #=====================================================================
 
 LOGFILE={{O_INST_LOG}}
@@ -42,6 +42,18 @@ for DIRNAME in custom files; do
 		echo -e "\tdoes not exist or is a symlink"
 	fi
 done
+
+{{^ifdef_keepfiles}}
+echo "Removing outdated files..."
+J_VER={{JAVA_VER}}
+REGEX=".*[-_]${J_VER}[-_].*"
+echo "* Java Version = '$J_VER'"
+echo "* Using regex: '${REGEX}'"
+find  $TMP_DIR/files/ -type f -not -regex "${REGEX}" -exec rm -vf {} \;
+{{/ifdef_keepfiles}}
+{{#ifdef_keepfiles}}
+echo "Keep everything in files/"
+{{/ifdef_keepfiles}}
 
 exit 0
 

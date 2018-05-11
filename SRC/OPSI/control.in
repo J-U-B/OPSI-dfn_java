@@ -199,8 +199,11 @@ default: True
 	* delete broken uninstall keys
 	* fix uninstall registry search pattern for JRE
 	* small improvements in powershell script
+	* new parameter for Makefile: KEEPFILES
+	* modified preinst/postinst for KEEPFILES
+	* readme.md updated
 	
-	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 12:54:11 +0200
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 15:42:18 +0200
 
 
 {{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-13:

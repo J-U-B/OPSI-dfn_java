@@ -31,6 +31,7 @@
 	
 	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
+	"ifdef_keepfiles"				:{{M_KEEPFILES}},	
 	
 	"ifdef_property_language"       :false,
 	"ifdef_property_kill_running"   :true,

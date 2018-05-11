@@ -1,8 +1,8 @@
 ############################################################
 # OPSI package Makefile (JAVA)
-# Version: 2.1.1
+# Version: 2.1.2
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2018-03-26 15:47:36 +0200
+# 2018-05-11 13:48:58 +0200
 ############################################################
 
 .PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
@@ -68,6 +68,18 @@ else
 	CUSTOMNAME := "dl"
 endif
 
+### Keep all files in files/ directory?
+KEEPFILES ?= false
+KEEPFILES_SEL := "[true] [false]"
+KFX := $(firstword $(KEEPFILES))
+override KFX := $(shell echo $(KFX) | tr A-Z a-z)
+override KFX := $(findstring [$(KFX)],$(KEEPFILES_SEL))
+ifeq (,$(KFX))
+	override KEEPFILES := false
+else
+	override KEEPFILES := $(shell echo $(KFX) | tr -d '[]')
+endif
+
 ### JRE or JDK or both?
 PACKAGE ?= full
 PACKAGE_TYPES="[jre] [jdk] [full]"
@@ -122,6 +134,7 @@ var_test:
 	@echo "* Templates OPSI        : [$(FILES_OPSI_IN)]"
 	@echo "* Templates CLIENT_DATA : [$(FILES_IN)]"
 	@echo "* Files Mask            : [$(FILES_MASK)]"
+	@echo "* Keep files            : [$(KEEPFILES)]"
 	@echo "=================================================================="
 	@echo "* Installer files in $(DL_DIR):"
 	@for F in `ls -1 $(DL_DIR)/$(FILES_MASK) | sed -re 's/.*\/(.*)$$/\1/' `; do echo "    $$F"; done 
@@ -216,10 +229,14 @@ help: header
 	@echo ""
 	@echo "Options:"
 	@echo "	SPEC=<filename>                 (default: spec.json)"
-	@echo "			...alternative spec file"
+	@echo "			Use the given alternative spec file."
 	@echo "	PACKAGE=[jre|jdk|full]          (default: full)"
+	@echo "			Build package for JRE, JDK or both?"
 	@echo "	ALLINC=[true|false]             (default: false)"
-	@echo "			...include software in OPSI package?"
+	@echo "			Include software in OPSI package?"
+	@echo "	KEEPFILES=[true|false]          (default: false)"
+	@echo "			Keep really all previous files from files/?"
+	@echo "			If false only files matching this package version are kept."
 	@echo "	ARCHIVE_FORMAT=[cpio|tar]       (default: cpio)"
 	@echo ""
 
@@ -295,7 +312,8 @@ build_json:
 	                         \"M_ORGNAME\"    : \"$(ORGNAME)\",       \
 	                         \"M_ORGPREFIX\"  : \"$(ORGPREFIX)\",     \
 	                         \"M_TESTPREFIX\" : \"$(TESTPREFIX)\",    \
-	                         \"M_ALLINC\"     : \"$(ALLINCLUSIVE)\",    \
+	                         \"M_ALLINC\"     : \"$(ALLINCLUSIVE)\",  \
+	                         \"M_KEEPFILES\"  : \"$(KEEPFILES)\",     \
 	                         \"M_TESTING\"    : \"$(TESTING)\"        }" > $(BUILD_JSON)
 
 

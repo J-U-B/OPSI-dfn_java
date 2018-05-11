@@ -28,6 +28,7 @@
 	
 	"ifdef_testing"                 :{{M_TESTING}}, 
 	"ifdef_allinc"                  :{{M_ALLINC}},
+	"ifdef_keepfiles"				:{{M_KEEPFILES}},	
 	
 	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 

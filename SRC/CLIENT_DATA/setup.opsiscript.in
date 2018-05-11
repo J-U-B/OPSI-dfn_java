@@ -327,7 +327,7 @@ del -f "$JRE_MSI$"
 # 
 # req.: PowerShell 2.0
 #
-# Jens Boettge <boettge@mpi-halle.mpg.de>  2018-03-29 - 2018-04-04
+# Jens Boettge <boettge@mpi-halle.mpg.de>  2018-03-29 - 2018-05-11
 #====================================================================
 $jre_installer = "$SrcDir$\$JRE_INSTALLER_64$"
 $jre_inst_args = "INSTALL_SILENT=1 REBOOT=0 /LV* %SystemDrive%\tmp\jre$JAVA_VER$_install_exe.log"
