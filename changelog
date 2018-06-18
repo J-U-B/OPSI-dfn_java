@@ -1,0 +1,229 @@
+{{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-15:
+	* fixed PowerShell script for JRE10
+	* changelog outsourced from control.in (combined again in final control file)
+	* adjusted postinst for changed $SRC directory (only valid for MPIMSP)
+	* fix restore custom directories in postinst
+	* use dotNet4 version of psDetail for Windows 10	
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-06-18 14:50:27 +0200
+	
+
+{{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-14:
+	* remove old firewall rules on uninstall
+	* delete broken uninstall keys
+	* fix uninstall registry search pattern for JRE
+	* small improvements in powershell script
+	* new parameter for Makefile: KEEPFILES
+	* modified preinst/postinst for KEEPFILES
+	* readme.md updated
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 15:42:18 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-13:
+	* Postinst-Fix for all inclusive packages
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-09 12:16:48 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.171.11|9.0.4.11|10.0.1.10)-12:
+	* product updates
+	* alternative spec_java8_xx2.json
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-04-18 08:21:52 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.162.12|9.0.4.11|10.0.0.46)-12:
+	* Support for standalone JRE 9/10
+		* extract MSI from executable installer (PowerShell)
+		* install JRE as MSI package
+	* helpers.opsifunc: new local functions:
+		* powershellGetExecPolicy
+		* powershellSetExecPolicy
+	* adjusted space requirements for JRE 9/10
+	* adjusted readme.md (PowerShell requirement)
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-04-04 14:31:40 +0200
+	
+	
+{{O_BASE_JAVA}}-(8.0.162.12|9.0.4.11|10.0.0.46)-11:
+	* Support for Java 10 added
+	* spec files:
+		* spec.json = generic Java/JRE/JDK
+		* spec_java<major_release>.json = ProductId (Java|JRE|JDK)<major_release>
+	* readme.md updated
+	* make target "download" creates md5sums for archives
+	* check md5sums of archives in self download packages
+	* Makefile support for opsi 4.1
+	* Library file for local functions
+	* new properties:
+		* auto_update
+		* web_java_security_level
+		* msi_silent_option
+		* set_env_java_home
+	* Updated readme.md
+	* Minor improvements
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-03-26 15:38:49 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.162.12|9.0.4.11)-10:
+	* Makefile improvements, support for custom names (self download packages)
+	* logfile for preinst/postinst defined in spec
+	* streamlined postinst.in
+	* moved and modified: package_download.sh.in to product_downloader.sh.in
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-02-19 11:21:21 +0100
+
+
+{{O_BASE_JAVA}}-(8.0.162.12|9.0.4.11)-9:
+	* Update to java8_8.0.162.12 / java9_9.0.4.11
+	* Update psdetail.exe 0.1.9.0.dev -> 0.1.10.0dev; debug version included
+	* Product_variables.opsiinc.in: testing packages using debug version of psdetail.exe
+	* control.in: description for kill_applic adjusted
+	* Fix in Makefile for download section
+	* Spec files adjusted
+	* Fixes in readme.md
+	* .gitignore fixed for wanted executables
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-01-21 02:14:00 +0100
+
+
+java8-8.0.152.16-7 / java9-9.0.1.11-8:
+	* Makefile: 
+		* option for alternative spec file
+		*  fixes to consider various jre/jdk releases
+	* new property: uninstall_before_setup
+	* support for Java9 packages
+		* modified download
+		* only 64 bit
+		* fixed search pattern for uninstall
+	* readme.md extended by Java 9
+	* optional install documentation for JDK
+	{{#ToDo}}
+		* features to implement
+			* properties: 
+				* patchjce 
+				* webjava-security_level
+				* java-updater
+				* updatebranch
+		* fixes:
+			*
+	{{/ToDo}}
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-12-15 11:01:03 +0100
+
+java8-8.0.152.16-7 {{STAGE}}:
+	* support for "batteries-included" packages
+	  * software download via Makefile
+	  * installation archives optional included in OPSI package
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-11-24 17:41:06 +0100
+
+java8-8.0.152.16-6 {{STAGE}}:
+	* package update to 8.0.144.01
+	* package support for JRE and JDK
+	* new: License GPLv3
+	* new: documentation in readme.md
+	* preparation for DFN package:
+		* preinst/postinst
+		* custom script support
+		* auto download of packages
+	* new properties:
+		* install_jre
+		* install_jdk
+		* install_demos					<-- not implemented yet -->
+		* install_jdk_doc				<-- not implemented yet -->
+		* install_javafx_doc			<-- not implemented yet -->
+		* custom_post_install
+		* custom_post_uninstall
+		* kill_running
+		* kill_applic
+	* images moved to subfolder, new icon set
+	* scripts renamed: *.ins -> *.opsiscript, *.opsiinc
+	* scripts extensive rewritten:
+		* setup.opsiscript(.in)
+		* delsub.opsiinc(*.in)
+		* product_variables.opsiinc(.in)
+		* variables.opsiinc
+		* checkinstance.opsiinc(.in)
+		* exit_code_msi.opsiinc
+	* updated:
+		* uninst_section_search.opsiinc
+		* uninstall.opsiscript
+		* checkvars.sh
+	* Changes which are not a part of the built package but the source:
+		* Makefile (check "make help")
+		* spec.json (variables for building packages)
+		* using templates from SRC to generate package scripts in BUILD
+		* using template engine pystache
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-08-24 16:14:02 +0200
+
+
+java8-8.0.1210.13-5 release:
+	* Product update -> jre8u121
+	* new: checkvars.sh
+	* new: uninst_section_search.inc
+	* revised delsub.ins
+	* variables.ins slimmed down
+	* changed script behaviour: ScriptErrorMessages=off, ExitOnError=true
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2017-01-26 12:14:11 +0100
+
+
+java8-8.0.1120.15-4 release:
+	* Product update -> jre8u112
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-10-21 08:16:35 +0200
+
+
+java8-8.0.1020.14-4 release:
+	* Fix Erkennung Architektur Uninstaller
+	* Erweiterung $UninstIDs$
+	* Optimierung setup.ins, delsub.ins
+	* Fix Anzeige Setup-Icon
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-26 10:47:43 +0200
+
+
+java8-8.0.1020.14-3 release:
+	* Property WEB_JAVA
+	* Verwendung EXE-Installer, Anpassung Optionen
+	* Erweiterung exitcodes_msi (-80)
+	* Fix java.settings.cfg
+	* Fix Erkennung Architektur Uninstaller
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-22 16:06:01 +0200
+
+
+java8-8.0.1020.14-2 release:
+	* Update -> jre8u102
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-07-21 13:57:12 +0200
+
+
+java8-8.0.920.14-2 testing:
+	* Update -> jre8u92
+	* Priority: -10 -> 0
+	* postinst angepasst fuer testing (Praefix 0_)
+	* Redesign delsub.ins
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2016-05-20 13:08:52 +0200
+
+
+java8-8.0.660.17-2:
+	* Update -> jre8u66
+	* Control: Website und Description angepasst
+	* delsub_older_versions.ins entfernt (File wird nicht verwendet)
+	* zusaetzliche Variablen in variables.ins: ProductKey und Version fuer aktuelle und alte Release
+	* Korrektur uninstall.ins
+	* Logfiles werden angehaengt (liwemo+)
+	* delsub.ins ueberarbeitet:
+		* Beruecksichtigung ProductProperty "install_architecture"
+		* nur letzte Vorversion wird vorerst beruecksichtigt
+		* explizites Loeschen des Uninstall-Registry-Keys
+	* Loeschen alter (Un)Install-Logs
+	* ProductProperty "install_architecture" um "sysnative" erweitert
+
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2015-10-21 14:00:27 +0200

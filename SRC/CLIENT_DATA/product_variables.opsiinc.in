@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-04-04 14:29:17 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-06-18 14:49:51 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -194,6 +194,9 @@ Set $UninstallLog$     	 = $LogDir$ + "\"+$FullProductId$+"_uninstall.log"
 ;-----------------------------------------------------------
 Set $TempDir$			= "%opsiTmpDir%"
 set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail.exe"
+if (CompareDotSeparatedNumbers($NTVersion$, ">=", "10.0"))
+	set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail4.exe"
+endif
 {{#ifdef_PSDETAIL_DEBUG}}
 set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail_debug.exe"
 {{/ifdef_PSDETAIL_DEBUG}}

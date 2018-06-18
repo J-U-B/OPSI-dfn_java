@@ -9,7 +9,7 @@
 #   PRODUCT_ID: id of the current product
 #   CLIENT_DATA_DIR: directory which contains the installed client data
 #=====================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 14:21:20 +0200
+# J. Boettge <boettge@mpi-halle.mpg.de>  2018-06-18 12:31:33 +0200
 #=====================================================================
 
 LOGFILE={{O_INST_LOG}}
@@ -27,8 +27,8 @@ PROD="{{O_BASE_JAVA}}"
 PROD=${PROD%%[0-9]*}
 VERSION={{O_SOFTWARE_VER}}
 J_RELEASE=${VERSION%%.*}
-SRC="${CLIENT_DATA_DIR}/../../source/${PROD}${J_RELEASE}"
-#SRC="${CLIENT_DATA_DIR}/../../source/${PRODUCT_ID##0_}"
+SRC="${CLIENT_DATA_DIR}/../_SOURCE/${PROD}${J_RELEASE}"
+#SRC="${CLIENT_DATA_DIR}/../_SOURCE/${PRODUCT_ID##0_}"
 DST="${CLIENT_DATA_DIR}/files"
 # remove trailing "/" in path:
 DST=${DST%\/}
@@ -46,7 +46,7 @@ P=${P/#test_/}
 if [ $IS_DFN == true ]; then
 	 [ ! -d "${DST}" -a ! -d $TMP_DIR/files ] && mkdir $DST
 else
-	### symlink files directory to ../../source/${PRODUCT_ID##0_}
+	### symlink files directory to ../_SOURCE/${PRODUCT_ID##0_}
 	### only for non-DFN packages:
 	if [ -h "${DST}" ]; then
 		echo "Symlink to [${DST}] already exists. - Replacing"
@@ -71,13 +71,14 @@ fi
 ### restore custom directories
 if [ -d $TMP_DIR ]; then
 	echo 'Restoring previous directories...'
-	
+	TMP_DIR=`realpath $TMP_DIR`
 	for DIRNAME in custom files; do
 		echo "* [${DIRNAME}]"
 		if [ -d $TMP_DIR/${DIRNAME} ]; then
-			test -e $CLIENT_DATA_DIR/${DIRNAME} && rm -rf $CLIENT_DATA_DIR/${DIRNAME}
+			test -e $CLIENT_DATA_DIR/${DIRNAME} || mkdir $CLIENT_DATA_DIR/${DIRNAME}
 			echo -e "\tmoving $TMP_DIR/${DIRNAME} to $CLIENT_DATA_DIR/"
-			mv $TMP_DIR/${DIRNAME} $CLIENT_DATA_DIR/ || exit 1	
+			rsync -av --remove-source-files $TMP_DIR/${DIRNAME}/. $CLIENT_DATA_DIR/${DIRNAME}/ &&\
+			rm -rf $TMP_DIR/${DIRNAME} || exit 1
 		else
 			echo -e "\tdoes not exist here"
 		fi

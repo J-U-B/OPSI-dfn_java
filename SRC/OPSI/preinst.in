@@ -7,7 +7,7 @@
 #   PRODUCT_ID: id of the current product
 #   CLIENT_DATA_DIR: directory where client data will be installed
 #===================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2018-05-11 15:41:33 +0200
+# J. Boettge <boettge@mpi-halle.mpg.de>  2018-06-18 12:32:02 +0200
 #=====================================================================
 
 LOGFILE={{O_INST_LOG}}
@@ -30,13 +30,15 @@ fi
 
 [ ! -d $CLIENT_DATA_DIR ] && exit 0
 mkdir $TMP_DIR
+[ -d $TMP_DIR ] && TMP_DIR=`realpath $TMP_DIR`
 
 echo "Saving previous directories..."
+#...but no symlinks
 for DIRNAME in custom files; do
 	path=$CLIENT_DATA_DIR/${DIRNAME}
 	echo "* [${path}]"
 	if [ -e $path -a ! -h ${path} ]; then
-		echo -e "\tmoving ${path} to ${TMP_DIR}"
+		echo -e "\tmoving ${path} to ${TMP_DIR}/"
 		mv ${path} ${TMP_DIR}/ || exit 2
 	else
 		echo -e "\tdoes not exist or is a symlink"
@@ -44,12 +46,14 @@ for DIRNAME in custom files; do
 done
 
 {{^ifdef_keepfiles}}
-echo "Removing outdated files..."
-J_VER=`echo {{JAVA_VER}} | sed -e 's/\./\\\\./g'`
-REGEX=".*[-_]${J_VER}[-_].*"
-echo "* Java Version = '$J_VER'"
-echo "* Using regex: '${REGEX}'"
-find  $TMP_DIR/files/ -type f -not -regex "${REGEX}" -exec rm -vf {} \;
+if [ -d $TMP_DIR/files ] ; then
+	echo "Removing outdated files..."
+	J_VER=`echo {{JAVA_VER}} | sed -e 's/\./\\\\./g'`
+	REGEX=".*[-_]${J_VER}[-_].*"
+	echo "* Java Version = '$J_VER'"
+	echo "* Using regex: '${REGEX}'"
+	find  $TMP_DIR/files/ -type f -not -iregex "${REGEX}" -exec rm -vf {} \;
+fi
 {{/ifdef_keepfiles}}
 {{#ifdef_keepfiles}}
 echo "Keep everything in files/"

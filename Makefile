@@ -1,8 +1,8 @@
 ############################################################
 # OPSI package Makefile (JAVA)
-# Version: 2.1.2
+# Version: 2.1.3
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2018-05-11 13:48:58 +0200
+# 2018-06-18 12:20:00 +0200
 ############################################################
 
 .PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
@@ -338,6 +338,10 @@ build: download clean copy_from_src
 		rm -f $(BUILD_DIR)/OPSI/$$F; \
 		${PYSTACHE} $(SRC_DIR)/OPSI/$$F.in $(BUILD_JSON) > $(BUILD_DIR)/OPSI/$$F; \
 	done	
+	
+	if [ -e $(BUILD_DIR)/OPSI/control -a -e changelog ]; then \
+		cat changelog >> $(BUILD_DIR)/OPSI/control; \
+	fi	
 	
 	for F in $(FILES_IN); do \
 		echo "* Creating CLIENT_DATA/$$F"; \

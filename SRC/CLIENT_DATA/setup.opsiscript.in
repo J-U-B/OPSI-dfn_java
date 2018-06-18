@@ -330,7 +330,8 @@ del -f "$JRE_MSI$"
 # Jens Boettge <boettge@mpi-halle.mpg.de>  2018-03-29 - 2018-05-11
 #====================================================================
 $jre_installer = "$SrcDir$\$JRE_INSTALLER_64$"
-$jre_inst_args = "INSTALL_SILENT=1 REBOOT=0 /LV* %SystemDrive%\tmp\jre$JAVA_VER$_install_exe.log"
+$jre_log = $env:SystemDrive + "\tmp\jre$JAVA_VER$_install_exe.log"
+$jre_inst_args = "INSTALL_SILENT=1 REBOOT=0 /LV* " + $jre_log
 $tgt_dir = "%opsiTmpDir%"
 # $tmp_dir = $env:LOCALAPPDATA + "Low\Oracle\Java\jre$JAVA_VER$_x64"
 $tmp_dir = $env:SYSTEMROOT + "\system32\config\systemprofile\AppData\LocalLow\Oracle\Java\jre$JAVA_VER$_x64"
@@ -372,21 +373,26 @@ if ($cnt -gt 0)
 		$ex = if (Test-Path "$tgt_dir\$_" -PathType Leaf) {"[OK]"} Else {"[missing]"}
 		write-host "`t$_`t$ex`r"
 	}
+	$ps_exit=0
 }
 else
 {
 	write-host "`rNo files written to $tgt_dir`r"
+	$ps_exit=1
 }
 
 if (($app) -and ($app.HasExited))
 {
     if ($app.ExitCode)
     {
-       write-host $app.ExitCode
        $msg = "`rDone with exit code: {0}`r" -f $app.ExitCode
        write-host $msg
-       exit $app.ExitCode
     }
+    else
+    {
+		write-host "`rNo exit code available"
+	}
+	exit $ps_exit
 } else { 
     write-host "`rInstaller is still running!`r"
     exit -1
