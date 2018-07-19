@@ -199,6 +199,9 @@ if (CompareDotSeparatedNumbers($NTVersion$, ">=", "10.0"))
 endif
 {{#ifdef_PSDETAIL_DEBUG}}
 set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail_debug.exe"
+if (CompareDotSeparatedNumbers($NTVersion$, ">=", "10.0"))
+	set $PSDETAIL$ 			= "%ScriptPath%\bin\psdetail4_debug.exe"
+endif
 {{/ifdef_PSDETAIL_DEBUG}}
 set $GETREALNAME$		= "%ScriptPath%\bin\GetRealName.exe"
 set $SEVENZIP$			= "%ScriptPath%\bin\7z.exe"

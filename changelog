@@ -1,3 +1,10 @@
+{{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-16:
+	* product updates
+	* restore custom directories in postinst improved
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-07-18 08:59:39 +0200
+
+
 {{O_BASE_JAVA}}-(8.0.171.11|8.0.172.11|9.0.4.11|10.0.1.10)-15:
 	* fixed PowerShell script for JRE10
 	* changelog outsourced from control.in (combined again in final control file)
