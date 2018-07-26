@@ -1,6 +1,6 @@
 {  
 	"_": "=== OPSI package variables ===",
-	"O_PKG_VER"         : "16",
+	"O_PKG_VER"         : "17",
 	"O_SOFTWARE_VER"    : "8.0.181.13",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
@@ -23,6 +23,7 @@
 	"HASH"        : "96a7b8442fe848ef90c96a2fad6ed6d1",
 
 	"_":"=== conditions ===",
+	"ifdef_x64_only"				:false,
 	"ifdef_auto_download"           :true,
 	
 	"ifdef_testing"                 :{{M_TESTING}},	

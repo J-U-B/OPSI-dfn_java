@@ -1,3 +1,9 @@
+{{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-17:
+	* Fix for issue #3: Setup fails on 32 bit systems due to explicit check
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-07-26 08:04:00 +0200
+	
+	
 {{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-16:
 	* product updates
 	* restore custom directories in postinst improved

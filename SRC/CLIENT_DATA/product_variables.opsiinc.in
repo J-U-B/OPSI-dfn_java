@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-06-18 14:49:51 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 07:58:35 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -24,10 +24,12 @@ if not (CompareDotSeparatedNumbers($NTVersion$, ">=", "6.1"))
 	isFatalError
 endif
 
+{{#ifdef_x64_only}}
 if not ($SystemType$ = "64 Bit System")
-	LogError "OS is not a 64 Bit System"
+	LogError "OS is not a 64 bit system but this package contains only 64 bit software"
 	isFatalError
 endif
+{{/ifdef_x64_only}}
 
 ;*** simplify SystemType
 Switch $SystemType$
@@ -105,8 +107,15 @@ if ( $sw_arch$ = "both" )
 	if ($SystemType$ = "x64")
 		Set $sw_arch$ = "32+64"
 	else
+		LogWarning "Cannot install 64 bit version of " + $ProductName$ + " on a 32 bit operating system!"
+		Comment "Installing at least the 32 bit version."
 		Set $sw_arch$ = "32"
 	endif
+endif
+
+if ($SystemType$ = "x32") and ($sw_arch$ = "64")
+	LogError "Cannot install 64 bit version of " + $ProductName$ + " on a 32 bit operating system!"
+	isFatalError
 endif
 
 Switch $sw_arch$
