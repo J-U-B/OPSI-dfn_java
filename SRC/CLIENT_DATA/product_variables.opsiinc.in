@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 11:08:23 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 12:25:11 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -126,7 +126,7 @@ Switch $sw_arch$
 	endcase
 	case "32"
 		; 32 bit software
-		:set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		;set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
 		set $InstallBase32$ = "%ProgramFiles32Dir%"
 		set $InstallBase$	= $InstallBase32$
 	endcase

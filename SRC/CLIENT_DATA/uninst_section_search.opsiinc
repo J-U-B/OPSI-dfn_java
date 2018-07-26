@@ -1,6 +1,6 @@
 ;======================================================================
 ; unist_section_search.inc
-; J. Boettge <boettge@mpi-halle.mpg.de>  	2018-07-26 10:51:05 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>  	2018-07-26 12:24:51 +0200
 ;======================================================================
 ; based on:
 ; https://opsi.wzb.eu/wiki/index.php/Uninstall-Registry_durchsuchen_und_Schlüssel_ermitteln
@@ -31,7 +31,7 @@ if ($SystemType$ = "x64")
 	Set $TempList$ =                           getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_64 '%SystemRoot%\cmd64.exe' /C")
 	Set $TempList$ = addListToList($TempList$, getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd64.exe' /C"))
 else
-	Set $TempList$ = getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd.exe' /C")
+	Set $TempList$ = getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\system32\cmd.exe' /C")
 endif
 ;----- 32 bit first, then 64 bit -----
 ;Set $TempList$ =                           getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd64.exe' /C")
