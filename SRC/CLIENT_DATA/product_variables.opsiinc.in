@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 07:58:35 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 11:08:23 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -126,12 +126,14 @@ Switch $sw_arch$
 	endcase
 	case "32"
 		; 32 bit software
-		set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		:set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		set $InstallBase32$ = "%ProgramFiles32Dir%"
 		set $InstallBase$	= $InstallBase32$
 	endcase
 	case "32+64"
 		set $InstallBase64$ = "%ProgramFiles64Dir%"
-		set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
+		set $InstallBase32$ = "%ProgramFiles32Dir%"
+		; set $InstallBase32$ = EnvVar("ProgramFiles(x86)")
 		set $InstallBase$ 	= ""
 	endcase
 EndSwitch
@@ -190,6 +192,9 @@ Set $pr_InstallJdkDoc$ = GetProductProperty("install_jdk_doc","False")
 Set $RegPathUninstall$	 = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
 Set $RegPathUninstall64$ = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
 Set $RegPathUninstall32$ = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+if ($SystemType$ = "x32")
+	Set $RegPathUninstall32$ = $RegPathUninstall$
+endif
 
 ;-----------------------------------------------------------
 ;*** logs

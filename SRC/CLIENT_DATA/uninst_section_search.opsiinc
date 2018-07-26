@@ -1,6 +1,6 @@
 ;======================================================================
 ; unist_section_search.inc
-; J. Boettge <boettge@mpi-halle.mpg.de>  	2017-08-23 14:46:06 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>  	2018-07-26 10:51:05 +0200
 ;======================================================================
 ; based on:
 ; https://opsi.wzb.eu/wiki/index.php/Uninstall-Registry_durchsuchen_und_Schlüssel_ermitteln
@@ -27,8 +27,12 @@ Set $RegSearchOpts$ = '/s /d  /f "' + $SearchPattern$ + '"'
 ;** reg query liefert alle Zeilen, in denen Searchpattern gefunden wird,
 ;** (auch z.B. DisplayName - nicht bei /k in reg query)
 ;----- 64 bit first, then 32 bit -----
-Set $TempList$ =                           getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_64 '%SystemRoot%\cmd64.exe' /C")
-Set $TempList$ = addListToList($TempList$, getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd64.exe' /C"))
+if ($SystemType$ = "x64")
+	Set $TempList$ =                           getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_64 '%SystemRoot%\cmd64.exe' /C")
+	Set $TempList$ = addListToList($TempList$, getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd64.exe' /C"))
+else
+	Set $TempList$ = getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd.exe' /C")
+endif
 ;----- 32 bit first, then 64 bit -----
 ;Set $TempList$ =                           getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_32 '%SystemRoot%\cmd64.exe' /C")
 ;Set $TempList$ = addListToList($TempList$, getOutStreamFromSection ("ExecWith_UninstSearch_registry_query_64 '%SystemRoot%\cmd64.exe' /C"))

@@ -1,7 +1,9 @@
 {{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-17:
 	* Fix for issue #3: Setup fails on 32 bit systems due to explicit check
+	* Registry search adjusted for 32 bit systems
+	* Using '%ProgramFiles32Dir%' instead of 'EnvVar("ProgramFiles(x86)")'
 	
-	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-07-26 08:04:00 +0200
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-07-26 11:15:34 +0200
 	
 	
 {{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-16:
