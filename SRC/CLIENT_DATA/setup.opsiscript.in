@@ -2,7 +2,7 @@
 ; setup.ins JAVA
 ; Installer-Typ: Oracle/MSI
 ; 
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-05-11 12:53:18 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-10-16 08:44:17 +0200
 ;======================================================================
 
 ;======================================================================
@@ -113,7 +113,7 @@ else
 				endif 
 				
 				; extract MSI from EXE
-				ExecWith_PS__ExtractMSI powershell.exe  WINST /SysNative
+				ExecWith_PS__Extract_JRE_MSI powershell.exe  WINST /SysNative
 				set $ExitCode$ = getLastExitCode
 				if not ($ExitCode$ = "0")
 					LogError "powershell script failed with exit code " + $ExitCode$
@@ -136,7 +136,7 @@ else
 					set $INSTALL_OPTIONS$	= $Inst_Opts_MSI_JRE$
 					set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JRE_" + $JAVA_VER$ 
 					Sub_Install
-					Files_delete_MSI
+					Files_delete_JRE_MSI
 				else
 					logError "File not found: " + $JRE_MSI$
 					isFatalError
@@ -148,12 +148,57 @@ else
 		
 		{{#ifdef_property_jdk}}
 		if ($bInstallJDK$ = "true")
-			message "Installing JDK " + $Version$ + " (64 bit)"
-			set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_64$
-			set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
-			set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
-						
-			Sub_Install		
+			if (CompareDotSeparatedNumbers($Version$, "<", "99"))
+				message "Installing JDK " + $Version$ + " (64 bit)"
+				set $INSTALLER$ 		= $SrcDir$ + $JDK_INSTALLER_64$
+				set $INSTALL_OPTIONS$ 	= $Inst_Opts_JDK$
+				set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$
+							
+				Sub_Install	
+			else
+				; workaround for bodged JDK 11+x ?
+				message "Processing workaround: Extracting JDK MSI from executable"
+				set $res$ = powershellGetExecPolicy($PWSH_EXECPOL$)
+				if (lower($PWSH_EXECPOL$) = "unrestricted") OR (lower($PWSH_EXECPOL$) = "remotesigned")
+					comment "Powershell execution policy is already set to: " + $PWSH_EXECPOL$
+				else
+					set $res$ = powershellSetExecPolicy("remotesigned")
+					if not($res$ = "0") 
+						LogError "Setting Powershell execution policy returns: " + $res$
+					endif
+				endif 
+				
+				; extract MSI from EXE
+				ExecWith_PS__Extract_JDK_MSI powershell.exe  WINST /SysNative
+				set $ExitCode$ = getLastExitCode
+				if not ($ExitCode$ = "0")
+					LogError "powershell script failed with exit code " + $ExitCode$
+					isFatalError
+				endif
+				
+				; ...restore execution policy
+				set $res$ = powershellSetExecPolicy($PWSH_EXECPOL$)
+				if not($res$ = "0") 
+						LogError "Setting Powershell execution policy returns: " + $res$
+				endif
+				
+				set $JDK_MSI$ = "%opsiTmpDir%\jdk" +$JAVA_VER$ + ".msi"
+				if not (fileExists($JDK_MSI$))
+					set $JDK_MSI$ = "%opsiTmpDir%\jdk" +$JAVA_VER$ + "64.msi"
+				endif
+				if (fileExists($JDK_MSI$))
+					message "Installing JDK " + $Version$ + " MSI (64 bit)"
+					set $INSTALLER$ 		= $JDK_MSI$ 
+					set $INSTALL_OPTIONS$	= $Inst_Opts_MSI_JDK$
+					set $InstallDir$ 		= $InstallBase64$ + "\" + $PathPrefix$ + "JDK_" + $JAVA_VER$ 
+					Sub_Install
+					Files_delete_JDK_MSI
+				else
+					logError "File not found: " + $JDK_MSI$
+					isFatalError
+				endif
+				; ...end of JDK 11 workaround			
+			endif	
 		endif
 		{{/ifdef_property_jdk}}
 	
@@ -313,13 +358,18 @@ Set "EnableJavaUpdate"=REG_DWORD:0
 
 
 ;=====================================================================
-[Files_delete_MSI]
+[Files_delete_JRE_MSI]
 ;=====================================================================
 del -f "$JRE_MSI$"
 
+;=====================================================================
+[Files_delete_JDK_MSI]
+;=====================================================================
+del -f "$JDK_MSI$"
+
 
 ;=====================================================================
-[ExecWith_PS__ExtractMSI]
+[ExecWith_PS__Extract_JRE_MSI]
 ;=====================================================================
 #====================================================================
 # Extrahieren des MSI-Paketes fuer JRE9/10 aus dem EXE-Installer 
@@ -397,4 +447,86 @@ if (($app) -and ($app.HasExited))
     write-host "`rInstaller is still running!`r"
     exit -1
 }
+
+
+;=====================================================================
+[ExecWith_PS__Extract_JDK_MSI]
+;=====================================================================
+#====================================================================
+# Extrahieren des MSI-Paketes fuer JDK11 aus dem EXE-Installer 
+# (Installation im System-Kontext)
+# 
+# req.: PowerShell 2.0
+#
+# Jens Boettge <boettge@mpi-halle.mpg.de>  2018-10-16 08:39:45 +0200
+#====================================================================
+$jdk_installer = "$SrcDir$\$JDK_INSTALLER_64$"
+$jdk_log = $env:SystemDrive + "\tmp\jdk$JAVA_VER$_install_exe.log"
+$jdk_inst_args = "/qb /LV* " + $jdk_log
+$tgt_dir = "%opsiTmpDir%"
+# $tmp_dir = $env:LOCALAPPDATA + "Low\Oracle\Java\jdk$JAVA_VER$_x64"
+$tmp_dir = $env:SYSTEMROOT + "\system32\config\systemprofile\AppData\LocalLow\Oracle\Java\jdk$JAVA_VER$_x64"
+$DBG=$false
+
+write-host "JDK temporary directory: $tmp_dir`r"
+write-host "MSI target directory   : $tgt_dir`r"
+write-host "EXE installer          : $jdk_installer`r"
+
+if (-not (Test-Path -PathType Container $tgt_dir ))
+{
+    New-Item -Path $tgt_dir -ItemType Directory | out-null
+}
+
+$files_done=@()
+$app = Start-Process $jdk_installer -ArgumentList $jdk_inst_args -PassThru -ErrorAction SilentlyContinue
+while (get-process -id $app.id -erroraction SilentlyContinue)
+{
+    sleep(0.2)
+    if (-not ($DBG)) {write-host "." -NoNewline}
+    #Get-ChildItem -Path $tmp_dir -File  -attributes !Temporary -filter 'jdk*.msi' -ErrorAction SilentlyContinue | foreach  {
+    Get-ChildItem -Path $tmp_dir -filter 'jdk*.msi' -ErrorAction SilentlyContinue| foreach  {
+        $s=$_.name
+        if ($DBG) {write-host "* $s"} 
+        if ( (-not($_.PSIsContainer))  -and (-not($files_done -contains $s)) ) 
+        { 
+            write-host "`rCopying $s to $tgt_dir`r"
+            Copy-Item -force -Path $tmp_dir\$s -Destination $tgt_dir\
+            $files_done+=$s
+        }  
+    }
+}
+
+$cnt=$files_done.Count
+if ($cnt -gt 0)
+{
+	write-host "`r$cnt file(s) written to $tgt_dir`r"
+	$files_done | foreach { 
+		$ex = if (Test-Path "$tgt_dir\$_" -PathType Leaf) {"[OK]"} Else {"[missing]"}
+		write-host "`t$_`t$ex`r"
+	}
+	$ps_exit=0
+}
+else
+{
+	write-host "`rNo files written to $tgt_dir`r"
+	$ps_exit=1
+}
+
+if (($app) -and ($app.HasExited))
+{
+    if ($app.ExitCode)
+    {
+       $msg = "`rDone with exit code: {0}`r" -f $app.ExitCode
+       write-host $msg
+    }
+    else
+    {
+		write-host "`rNo exit code available"
+	}
+	exit $ps_exit
+} else { 
+    write-host "`rInstaller is still running!`r"
+    exit -1
+}
+
 

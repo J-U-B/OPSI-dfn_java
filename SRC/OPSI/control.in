@@ -15,7 +15,7 @@ type: localboot
 	{{#ifdef_property_jdk}}
 {{! ---------- JRE und JDK -------------------------------------------}}
 id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JAVA}}
-name: Java Runtime Environment and Devlopment Kit v{{JAVA_RELEASE}}
+name: Java Runtime Environment and Development Kit v{{JAVA_RELEASE}}
 description: ORACLE Runtime Environment (JRE) and Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
 {{! ------------------------------------------------------------------}}
 	{{/ifdef_property_jdk}}
@@ -31,7 +31,7 @@ description: ORACLE Runtime Environment (JRE) for the Java Platform, Standard Ed
 	{{#ifdef_property_jdk}}
 {{! ---------- JDK ---------------------------------------------------}}
 id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JDK}}
-name: Java Devlopment Kit v{{JAVA_RELEASE}}
+name: Java Development Kit v{{JAVA_RELEASE}}
 description: ORACLE Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
 {{! ------------------------------------------------------------------}}
 	{{/ifdef_property_jdk}}
@@ -108,7 +108,7 @@ type: unicode
 name: web_java
 multivalue: False
 editable: False
-description: Allow Java applets in web browser?
+description: Allow Java applets in web browser? (obsolete for JDK 11)
 values: ["Disable", "Enable"]
 default: ["Disable"]
 
@@ -117,7 +117,7 @@ type: unicode
 name: web_java_security_level
 multivalue: False
 editable: False
-description: Security level for Java applets in web browser if enabled
+description: Security level for Java applets in web browser if enabled (obsolete for JDK 11)
 values: ["H", "VH"]
 default: ["VH"]
 

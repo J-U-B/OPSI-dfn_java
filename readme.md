@@ -41,15 +41,11 @@ Versionen ab 9 nur noch als Version fuer 64 Bit</u> vor.
 
 Da Oracle mit **Java 11** die Lizenzbedingungen geaendert hat und die JRE hier nun
 einer <u>kommerziellen Lizenz</u> unterliegt, wird  ab dieser Version nur noch das
-OPSI-Paket fuer das JDK erstellt.
+OPSI-Paket fuer das **JDK 11** erstellt.  
+**<u>Achtung</u>: Fuer den Einsatz der Software gelten die **[**Lizenzbedingungen von
+Oracle fuer Java SE**](https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html).
 
 Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
-
-Das Paket wurde aus dem internen Paket des *Max-Planck-Institut fuer Mikrostrukturphysik*
-abgeleitet und fuer die Verwendung im *DFN*-Repository angepasst und erweitert.
-Es wird versucht auf die Besonderheiten der jeweiligen Repositories einzugehen;
-entsprechend werden durch ein einfaches ***Makefile*** aus den Quellen verschiedene
-Pakete erstellt.
 
 Teile dieser Dokumentation beziehen sich nicht ausschliesslich auf die erstellten 
 OSPI-Pakete, sondern beruecksichtigen auch den Build-Prozess.

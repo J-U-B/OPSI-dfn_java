@@ -3,7 +3,7 @@
 ; This file contains all possible variables, excluding the opsi-system
 ; variables, for the opsi-winst scripts in use.
 ;
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-05-11 09:09:05 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-10-16 08:35:21 +0200
 ;======================================================================
 
 DefStringList $Applications$
@@ -50,6 +50,7 @@ DefVar $Inst_Loc$
 DefVar $Inst_Opts_JDK$
 DefVar $Inst_Opts_JRE$
 DefVar $Inst_Opts_MSI_JRE$
+DefVar $Inst_Opts_MSI_JDK$
 DefVar $Inst_Ver$
 DefVar $isDFN$
 DefVar $JavaMajor$
@@ -58,6 +59,7 @@ DefVar $JAVASETTINGSCFG$
 DefVar $JAVA_VER$
 DefVar $JDK_FEATURES$
 DefVar $JDK_DOC$
+DefVar $JDK_MSI$
 DefVar $JDK_INSTALLER_32$
 DefVar $JDK_INSTALLER_64$
 DefVar $JRE_INSTALLER_32$

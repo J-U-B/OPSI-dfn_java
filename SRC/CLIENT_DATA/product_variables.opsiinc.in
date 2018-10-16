@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-10-16 07:59:05 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-10-16 08:33:28 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -330,7 +330,7 @@ Switch $JavaMajor$
 		{{#ifdef_property_jdk}}
 		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
 		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
-		Set $MinimumSpace$ 		= "1400 MB"
+		Set $MinimumSpace$ 		= "1200 MB"
 		{{/ifdef_property_jdk}}
 	EndCase	
 	DefaultCase
@@ -358,7 +358,13 @@ Set $JDK_FEATURES$ = 'ADDLOCAL="ToolsFeature,SourceFeature"'
 Set $Inst_Opts_JRE$	= " INSTALL_SILENT=1 STATIC="+ $pr_Static$ +" AUTO_UPDATE="+ $pr_AutoUpdate$ +" REMOVEOUTOFDATEJRES=0 WEB_ANALYTICS=0 WEB_JAVA=" + $pr_WebJava$ + " WEB_JAVA_SECURITY_LEVEL="+ $pr_WebJavaSecurityLevel$ +" REBOOT=0 SPONSORS=0 /LV* " + $InstallLog$
 Set $Inst_Opts_MSI_JRE$ = " ENTERPRISE=YES STATIC="+ $pr_Static$ +" AUTO_UPDATE="+ $pr_AutoUpdate$ +" REMOVEOUTOFDATEJRES=0 WEB_ANALYTICS=0 WEB_JAVA=" + $pr_WebJava$ + " WEB_JAVA_SECURITY_LEVEL="+ $pr_WebJavaSecurityLevel$ +" REBOOT=0 SPONSORS=0 /liwemo " + $InstallLog$
 
-Set $Inst_Opts_JDK$	= $Inst_Opts_JRE$ + " " + $JDK_FEATURES$
+if (CompareDotSeparatedNumbers($Version$, "<", "11"))
+	Set $Inst_Opts_JDK$	= $Inst_Opts_JRE$ + " " + $JDK_FEATURES$
+	;Set $Inst_Opts_MSI_JDK$ = " ENTERPRISE=YES STATIC="+ $pr_Static$ +" "+ $JDK_FEATURES$ +" AUTO_UPDATE="+ $pr_AutoUpdate$ +" WEB_ANALYTICS=0 WEB_JAVA=" + $pr_WebJava$ + " WEB_JAVA_SECURITY_LEVEL="+ $pr_WebJavaSecurityLevel$ +" REBOOT=0 SPONSORS=0 /liwemo " + $InstallLog$
+	Set $Inst_Opts_MSI_JDK$ = " STATIC="+ $pr_Static$ +" "+ $JDK_FEATURES$ + " REBOOT=0 SPONSORS=0 /liwemo " + $InstallLog$
+else
+	set $Inst_Opts_JDK$	= "/qn /lv+ " + $InstallLog$  + " " + $JDK_FEATURES$
+endif
 
 ; Set $Uninst_Opts$	= "/qb-! /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
 Set $Uninst_Opts$	= "/qn /liwemo+ " + $UninstallLog$ + " REBOOT=ReallySuppress"
