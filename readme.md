@@ -42,7 +42,7 @@ Versionen ab 9 nur noch als Version fuer 64 Bit</u> vor.
 Da Oracle mit **Java 11** die Lizenzbedingungen geaendert hat und die JRE hier nun
 einer <u>kommerziellen Lizenz</u> unterliegt, wird  ab dieser Version nur noch das
 OPSI-Paket fuer das **JDK 11** erstellt.  
-**<u>Achtung</u>: Fuer den Einsatz der Software gelten die **[**Lizenzbedingungen von
+**<u>Achtung</u>: Fuer den Einsatz der Software gelten die** [**Lizenzbedingungen von
 Oracle fuer Java SE**](https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html).
 
 Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
