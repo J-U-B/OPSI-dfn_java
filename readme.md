@@ -1,4 +1,4 @@
-# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8/9/10") JAVA8 / JAVA9 / JAVA 10
+# ![](./SRC/CLIENT_DATA/images/java_icon.png "Java 8/9/10") JAVA8 / JAVA9 / JAVA 10 / JDK 11
 
 ## ToC ##
 
@@ -36,8 +36,13 @@ Dieses OPSI-Paket (bzw. dessen Quellen) fuer **Java 8**, **Java 9** und
 das **Development Kit (JDK)** ab. *(Anm.: Die Installationspakete von Oracle
 fuer die JRE erlauben seit der Release 9 keine automatische Installation im Kontext der
 OPSI-Pakete. - siehe [Anmerkungen/ToDo](#anmerkungen_todo))*  
-Waehrend Java 8 in einer 32- und 64-Bit-Version verfuegbar ist, liegen <u>Java 9 
-und Java 10 nur noch als Version fuer 64 Bit</u> vor.  
+Waehrend Java 8 in einer 32- und 64-Bit-Version verfuegbar ist, liegen die <u> 
+Versionen ab 9 nur noch als Version fuer 64 Bit</u> vor.
+
+Da Oracle mit **Java 11** die Lizenzbedingungen geaendert hat und die JRE hier nun
+einer <u>kommerziellen Lizenz</u> unterliegt, wird  ab dieser Version nur noch das
+OPSI-Paket fuer das JDK erstellt.
+
 Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
 
 Das Paket wurde aus dem internen Paket des *Max-Planck-Institut fuer Mikrostrukturphysik*
@@ -318,12 +323,12 @@ zuzustimmen.
 
 * JDK/JRE:
 > You must accept the [Oracle Binary Code License Agreement for Java SE](http://www.oracle.com/technetwork/java/javase/terms/license/index.html) to download this software.
-
-* JDK 8/9/10 Dokumentation:
+> Mit **Java 11** wurden die [Lizenzbestimmungen fuer Java SE](https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html) geaendert!
+* JDK 8/9/10/11 Dokumentation:
 > You must accept the [Java SE Development Kit 8 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase8speclicense-2158700.html) to download this software.
 > You must accept the [Java SE Development Kit 9 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase9speclicense-3903847.html)
 > You must accept the [Java SE Development Kit 10 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase10speclicense-4417634.html)
-
+> You must accept the [Java SE Development Kit 11 Documentation License Agreement](http://download.oracle.com/otndocs/jcp/java_se-11-final-spec/license.html)
 Die Installation dieses Paketes setzt voraus, dass der Nutzer dem Folge geleistet
 hat. Sollte den Lizenzbedingungen nicht zugestimmt werden, darf dieses Paket nicht
 verwendet werden.
@@ -410,4 +415,4 @@ Bekannte Fehler:
 
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-05-11 13:59:15 +0200
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-10-16 07:16:34 +0200

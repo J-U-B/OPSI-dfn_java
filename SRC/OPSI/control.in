@@ -1,3 +1,7 @@
+{{! ========================================================================== }}
+{{!  ORACLE JRE/JDK Control                                                    }}
+{{!  J. Boettge <boettge@mpi-halle.mpg.de> 2018-10-16 07:48:06 +0200           }}
+{{! ========================================================================== }}
 [Package]
 version: {{O_PKG_VER}}
 depends: 
@@ -12,14 +16,14 @@ type: localboot
 {{! ---------- JRE und JDK -------------------------------------------}}
 id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JAVA}}
 name: Java Runtime Environment and Devlopment Kit v{{JAVA_RELEASE}}
-description: Runtime Environment (JRE) and Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
+description: ORACLE Runtime Environment (JRE) and Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
 {{! ------------------------------------------------------------------}}
 	{{/ifdef_property_jdk}}
 	{{^ifdef_property_jdk}}
 {{! ---------- JRE ---------------------------------------------------}}
 id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JRE}}
 name: Java Runtime Environment
-description: Runtime Environment (JRE) for the Java Platform, Standard Edition (Java SE)
+description: ORACLE Runtime Environment (JRE) for the Java Platform, Standard Edition (Java SE)
 {{! ------------------------------------------------------------------}}
 	{{/ifdef_property_jdk}}
 {{/ifdef_property_jre}}
@@ -28,7 +32,7 @@ description: Runtime Environment (JRE) for the Java Platform, Standard Edition (
 {{! ---------- JDK ---------------------------------------------------}}
 id: {{TESTPREFIX}}{{ORGPREFIX}}{{O_BASE_JDK}}
 name: Java Devlopment Kit v{{JAVA_RELEASE}}
-description: Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
+description: ORACLE Development Kit (JDK) for the Java Platform, Standard Edition (Java SE)
 {{! ------------------------------------------------------------------}}
 	{{/ifdef_property_jdk}}
 {{/ifdef_property_jre}}

@@ -1,8 +1,8 @@
 ############################################################
 # OPSI package Makefile (JAVA)
-# Version: 2.1.3
+# Version: 2.1.4
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2018-06-18 12:20:00 +0200
+# 2018-10-16 07:45:16 +0200
 ############################################################
 
 .PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
@@ -104,6 +104,10 @@ else
 	BUILD_FOR_JDK = true
 endif
 
+JAVA_RELEASE := $(shell grep '"JAVA_RELEASE"' $(SPEC) | sed -e 's/^.*\s*:\s*\"\(.*\)\".*$$/\1/' )
+ifeq (11,$(JAVA_RELEASE))
+	override BUILD_FOR_JRE := false
+endif
 
 ARCHIVE_FORMAT ?= cpio
 ARCHIVE_TYPES :="[cpio] [tar]"
@@ -124,6 +128,7 @@ leave_err:
 
 var_test:
 	@echo "=================================================================="
+	@echo "* Java Release          : $(JAVA_RELEASE)"
 	@echo "* Java Version          : $(JAVA_VER)"
 	@echo "* SPEC file             : [$(SPEC)]"
 	@echo "* Batteries included    : [$(ALLINC)] --> [$(ALLINCLUSIVE)]"
@@ -162,14 +167,6 @@ mpimsp: header
 			STAGE="release"  \
 	build
 
-dfn: header
-	@echo "---------- building DFN package ----------------------------------"
-	@make 	TESTPREFIX=""    \
-			ORGNAME="DFN"    \
-			ORGPREFIX="dfn_" \
-			STAGE="release"  \
-	build
-
 mpimsp_test: header
 	@echo "---------- building MPIMSP testing package -----------------------"
 	@make 	TESTPREFIX="0_"	 \
@@ -178,6 +175,48 @@ mpimsp_test: header
 			STAGE="testing"  \
 	build
 
+
+o4i: header
+	@echo "---------- building O4I package ----------------------------------"
+	@make 	TESTPREFIX=""    \
+			ORGNAME="O4I"    \
+			ORGPREFIX="o4i_" \
+			STAGE="release"  \
+	build
+
+o4i_test: header
+	@echo "---------- building O4I testing package --------------------------"
+	@make 	TESTPREFIX="test_"  \
+			ORGNAME="O4I"    \
+			ORGPREFIX="o4i_" \
+			STAGE="testing"  \
+	build
+
+o4i_test_0: header
+	@echo "---------- building O4I testing package --------------------------"
+	@make 	TESTPREFIX="0_"  \
+			ORGNAME="O4I"    \
+			ORGPREFIX="o4i_" \
+			STAGE="testing"  \
+	build
+
+o4i_test_noprefix: header
+	@echo "---------- building O4I testing package --------------------------"
+	@make 	TESTPREFIX=""    \
+			ORGNAME="O4I"    \
+			ORGPREFIX="o4i_" \
+			STAGE="testing"  \
+	build
+
+
+dfn: header
+	@echo "---------- building DFN package ----------------------------------"
+	@make 	TESTPREFIX=""    \
+			ORGNAME="DFN"    \
+			ORGPREFIX="dfn_" \
+			STAGE="release"  \
+	build	
+	
 dfn_test: header
 	@echo "---------- building DFN testing package --------------------------"
 	@make 	TESTPREFIX="test_"  \
@@ -201,6 +240,8 @@ dfn_test_noprefix: header
 			ORGPREFIX="dfn_" \
 			STAGE="testing"  \
 	build
+	
+		
 
 clean_packages:
 	@echo "---------- cleaning packages, checksums and zsync ----------------"

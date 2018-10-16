@@ -1,6 +1,6 @@
 ;=====================================================================
 ; product specific variables
-; J. Boettge <boettge@mpi-halle.mpg.de>		2018-07-26 12:25:11 +0200
+; J. Boettge <boettge@mpi-halle.mpg.de>		2018-10-16 07:59:05 +0200
 ;=====================================================================
 include_insert "%ScriptPath%\variables.opsiinc"
 include_append "%ScriptPath%\exitcode_msi.opsiinc"
@@ -73,7 +73,7 @@ setlogLevel 				= $LogLevelDefault$
 ;-----------------------------------------------------------
 ;*** detect DFN package:
 ;-----------------------------------------------------------
-if strPos($FullProductId$, "dfn_") = "0"
+if (strPos($FullProductId$, "o4i_") = "0") AND (strPos($FullProductId$, "dfn_") = "0")
 	set $isDFN$ = "false"
 	set $StrippedProductId$ = $ProductId$
 else
@@ -321,6 +321,18 @@ Switch $JavaMajor$
 		Set $MinimumSpace$ 		= "1400 MB"
 		{{/ifdef_property_jdk}}
 	EndCase
+	Case "11"
+		{{#ifdef_property_jre}}
+		; this part is not required since we do not deliver jre11
+		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $MinimumSpace$ 		= "500 MB"
+		{{/ifdef_property_jre}}
+		{{#ifdef_property_jdk}}
+		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
+		Set $MinimumSpace$ 		= "1400 MB"
+		{{/ifdef_property_jdk}}
+	EndCase	
 	DefaultCase
 		LogError "Unsupported Java major release: " + $JavaMajor$
 		isFatalError	

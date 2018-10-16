@@ -1,3 +1,10 @@
+{{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-18 / JDK-11.0.0.28-18:
+	* support for JDK 11
+	* support for building packages with o4i prefix
+	
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-10-16 07:37:23 +0200
+	
+
 {{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-17:
 	* Fix for issue #3: Setup fails on 32 bit systems due to explicit check
 	* Registry search adjusted for 32 bit systems

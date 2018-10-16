@@ -1,13 +1,13 @@
 {  
 	"_": "=== OPSI package variables ===",
 	"O_PKG_VER"         : "18",
-	"O_SOFTWARE_VER"    : "10.0.2",
+	"O_SOFTWARE_VER"    : "11",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
 
-	"O_BASE_JAVA"       : "java10",
-	"O_BASE_JRE"        : "jre10",
-	"O_BASE_JDK"        : "jdk10",
+	"O_BASE_JAVA"       : "java11",
+	"O_BASE_JRE"        : "jre11",
+	"O_BASE_JDK"        : "jdk11",
 	
 	"STAGE"             : "{{M_STAGE}}",
 	"TESTPREFIX"        : "{{M_TESTPREFIX}}",
@@ -17,10 +17,10 @@
 	"_": "=== Variables for downloading Java ===",
 	
 	"_": "=== * JRE/JDK/Demos/Docs ===",
-	"JAVA_RELEASE": "10",
-	"JAVA_VER"    : "10.0.2",
-	"JAVA_BUILD"  : "13",
-	"HASH"        : "19aef61b38124481863b1413dce1855f",
+	"JAVA_RELEASE": "11",
+	"JAVA_VER"    : "11",
+	"JAVA_BUILD"  : "28",
+	"HASH"        : "55eed80b163941c8885ad9298e6d786a",
 	
 	"_":"=== conditions ===",
 	"ifdef_x64_only"				:true,
@@ -29,7 +29,7 @@
 	"ifdef_testing"                 :{{M_TESTING}}, 
 	"ifdef_allinc"                  :{{M_ALLINC}},
 	
-	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
+	"ifdef_property_jre"            :false,
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
 	"ifdef_keepfiles"				:{{M_KEEPFILES}},	
 	
