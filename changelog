@@ -1,4 +1,14 @@
-{{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-18 / JDK-11.0.0.28-18:
+{{O_BASE_JAVA}}-(8.0.191.12|8.0.192.12)-18 / JDK-11.0.1.13-18:
+	* product updates:
+		* java 8 -> 8.0.191.12/8.0.192.12
+		* jdk 11 -> 11.0.1.13
+	* note: java 9 and java 10 are out of service
+	* leave actionRequest unchanged if application is runnig and OPSI is not allowed to kill it
+	* changed behavior of preinst script if $TMP_DIR already exists
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-10-18 07:25:10 +0200
+
+
+{{O_BASE_JAVA}}-(8.0.181.13|10.0.2.13)-18 / JDK-11.0.1.13-18:
 	* support for JDK 11
 	* support for building packages with o4i prefix
 	* icon set update

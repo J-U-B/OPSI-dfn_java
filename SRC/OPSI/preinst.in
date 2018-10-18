@@ -7,7 +7,7 @@
 #   PRODUCT_ID: id of the current product
 #   CLIENT_DATA_DIR: directory where client data will be installed
 #===================================================================
-# J. Boettge <boettge@mpi-halle.mpg.de>  2018-06-25 07:46:50 +0200
+# J. Boettge <boettge@mpi-halle.mpg.de>  2018-10-18 08:13:23 +0200
 #=====================================================================
 
 TS=$(date +"%s")
@@ -25,10 +25,15 @@ echo "=================================================="
 date +'Start: %F  %H:%M:%S'
 
 TMP_DIR=${CLIENT_DATA_DIR}/../${PRODUCT_ID}.tmp
+NOW=`date +"%F_%H%M%S"`
 
 if [ -d $TMP_DIR ]; then
-	echo "Temporary directory $TMP_DIR already exist, aborting!"
-	exit 1
+	# echo "Temporary directory $TMP_DIR already exist, aborting!"
+	# exit 1
+	TMP_DIR_OLD=${CLIENT_DATA_DIR}/../${PRODUCT_ID}_${NOW}.tmp
+	echo "Temporary directory $TMP_DIR already exist. Moving to: ${TMP_DIR_OLD}"
+	[ -d $TMP_DIR_OLD ] && rm -rf $TMP_DIR_OLD
+	mv $TMP_DIR $TMP_DIR_OLD
 fi
 
 [ ! -d $CLIENT_DATA_DIR ] && exit 0
@@ -66,4 +71,3 @@ date +'Finish: %F  %H:%M:%S'
 TE=$(date +"%s")
 echo  "*** Script runtime: $(($TE - $TS)) seconds ***"
 exit 0
-

@@ -2,7 +2,7 @@
 # OPSI package Makefile (JAVA)
 # Version: 2.1.4
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2018-10-16 07:45:16 +0200
+# 2018-10-18 07:48:34 +0200
 ############################################################
 
 .PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
@@ -107,6 +107,12 @@ endif
 JAVA_RELEASE := $(shell grep '"JAVA_RELEASE"' $(SPEC) | sed -e 's/^.*\s*:\s*\"\(.*\)\".*$$/\1/' )
 ifeq (11,$(JAVA_RELEASE))
 	override BUILD_FOR_JRE := false
+endif
+
+ifeq (, $(filter-out false, $(BUILD_FOR_JRE) $(BUILD_FOR_JDK)))
+	BAIL_OUT = true
+else
+	BAIL_OUT = false
 endif
 
 ARCHIVE_FORMAT ?= cpio
@@ -259,6 +265,10 @@ help: header
 	@echo "Valid targets: "
 	@echo "	mpimsp"
 	@echo "	mpimsp_test"
+	@echo "	o4i"
+	@echo "	o4i_test"
+	@echo "	o4i_test_0"
+	@echo "	o4i_test_noprefix"	
 	@echo "	dfn"
 	@echo "	dfn_test"
 	@echo "	dfn_test_0"
@@ -371,6 +381,12 @@ download: build_json
 	
 build: download clean copy_from_src
 	@echo "* Choosen package type: $(PACKAGE)  [JRE:$(BUILD_FOR_JRE), JDK:$(BUILD_FOR_JDK)]"
+	
+	@echo "* DBG: BAIL_OUT=[$(BAIL_OUT)]"
+	if [ "$(BAIL_OUT)" = "true" ]; then \
+		echo "  Nothing to do!"; \
+		exit 2; \
+	fi
 	
 	@make build_json
 	
