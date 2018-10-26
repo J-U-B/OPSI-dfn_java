@@ -2,7 +2,7 @@
 # OPSI package Makefile (JAVA)
 # Version: 2.1.4
 # Jens Boettge <boettge@mpi-halle.mpg.de>
-# 2018-10-18 07:48:34 +0200
+# 2018-10-26 11:52:17 +0200
 ############################################################
 
 .PHONY: header clean mpimsp dfn mpimsp_test dfn_test all_test all_prod all help download
@@ -421,8 +421,8 @@ build: download clean copy_from_src
 	cd $(CURDIR)
 
 
-all_test:  header mpimsp_test dfn_test dfn_test_0
+all_test:  header mpimsp_test o4i_test dfn_test dfn_test_0
 
-all_prod : header mpimsp dfn
+all_prod : header mpimsp o4i dfn
 
-all : header mpimsp dfn mpimsp_test dfn_test dfn_test_0
+all : header mpimsp o4i dfn mpimsp_test o4i_test dfn_test

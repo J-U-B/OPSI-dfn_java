@@ -1,3 +1,8 @@
+{{O_BASE_JAVA}}-(8.0.191.12|8.0.192.12)-19 / JDK-11.0.1.13-19:
+	* fixes in preinst.in/postinst.in for O4I repository
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-10-26 11:11:50 +0200
+
+
 {{O_BASE_JAVA}}-(8.0.191.12|8.0.192.12)-18 / JDK-11.0.1.13-18:
 	* product updates:
 		* java 8 -> 8.0.191.12/8.0.192.12
