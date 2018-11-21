@@ -1,3 +1,8 @@
+{{O_BASE_JAVA}}-(8.0.191.12|8.0.192.12)-20 / JDK-11.0.1.13-20:
+	* fix for product_downloader.sh.in: increased maximum redirects
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-11-21 18:07:45 +0100
+
+
 {{O_BASE_JAVA}}-(8.0.191.12|8.0.192.12)-19 / JDK-11.0.1.13-19:
 	* fixes in preinst.in/postinst.in for O4I repository
 	-- J. Boettge <boettge@mpi-halle.mpg.de>  2018-10-26 11:11:50 +0200
