@@ -1,7 +1,7 @@
 {  
 	"_": "=== OPSI package variables ===",
 	"O_PKG_VER"         : "20",
-	"O_SOFTWARE_VER"    : "11.0.1",
+	"O_SOFTWARE_VER"    : "11.0.2",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
 
@@ -18,9 +18,9 @@
 	
 	"_": "=== * JRE/JDK/Demos/Docs ===",
 	"JAVA_RELEASE": "11",
-	"JAVA_VER"    : "11.0.1",
-	"JAVA_BUILD"  : "13",
-	"HASH"        : "90cf5d8f270a4347a95050320eef3fb7",
+	"JAVA_VER"    : "11.0.2",
+	"JAVA_BUILD"  : "9",
+	"HASH"        : "f51449fcd52f4d52b93a989c5c56ed3c",
 	
 	"_":"=== conditions ===",
 	"ifdef_x64_only"				:true,
