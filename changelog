@@ -1,3 +1,10 @@
+{{O_BASE_JAVA}}-(8.0.201.09|8.0.202.08)-21 / JDK-11.0.2.9-21 / JDK-12.0.0.33-21:
+	* support for JDK 12
+	* downloader support for curl; fallback if wget is not found
+	* documentation adapted accordingly
+	-- J. Boettge <boettge@mpi-halle.mpg.de>  2019-03-21 08:43:40 +0100
+
+
 {{O_BASE_JAVA}}-(8.0.201.09|8.0.202.08)-20 / JDK-11.0.2.9-20:
 	* product updates
 	* fix setup.opsiscript.in:291 - missing string terminator

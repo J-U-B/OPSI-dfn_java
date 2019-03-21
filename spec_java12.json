@@ -1,37 +1,39 @@
 {  
 	"_": "=== OPSI package variables ===",
 	"O_PKG_VER"         : "21",
-	"O_SOFTWARE_VER"    : "8.0.201.09",
+	"O_SOFTWARE_VER"    : "12.0.0.33",
 	"O_RELEASE_DATE"    : "{{M_TODAY}}",
 	"O_INST_LOG"        : "/tmp/${PRODUCT_ID}__opsi_package_install.log",
 	
-	"O_BASE_JAVA"       : "java8",
-	"O_BASE_JRE"        : "jre8",
-	"O_BASE_JDK"        : "jdk8",
+	"O_SW_LIC"			: "https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html",
+
+	"O_BASE_JAVA"       : "java12",
+	"O_BASE_JRE"        : "jre12",
+	"O_BASE_JDK"        : "jdk12",
 	
 	"STAGE"             : "{{M_STAGE}}",
-	"TESTPREFIX"	    : "{{M_TESTPREFIX}}",
+	"TESTPREFIX"        : "{{M_TESTPREFIX}}",
 	"ORGPREFIX"         : "{{M_ORGPREFIX}}",
 	"ORGNAME"           : "{{M_ORGNAME}}",
-
+	
 	"_": "=== Variables for downloading Java ===",
-
+	
 	"_": "=== * JRE/JDK/Demos/Docs ===",
-	"JAVA_RELEASE": "8",
-	"JAVA_VER"    : "8u201",
-	"JAVA_BUILD"  : "b09",
-	"HASH"        : "42970487e3af4f5aa5bca3f542482c60",
-
+	"JAVA_RELEASE": "12",
+	"JAVA_VER"    : "12",
+	"JAVA_BUILD"  : "33",
+	"HASH"        : "312335d836a34c7c8bba9d963e26dc23",
+	
 	"_":"=== conditions ===",
-	"ifdef_x64_only"				:false,
+	"ifdef_x64_only"				:true,
 	"ifdef_auto_download"           :true,
 	
-	"ifdef_testing"                 :{{M_TESTING}},	
+	"ifdef_testing"                 :{{M_TESTING}}, 
 	"ifdef_allinc"                  :{{M_ALLINC}},
-	"ifdef_keepfiles"				:{{M_KEEPFILES}},	
 	
-	"ifdef_property_jre"            :{{BUILD_FOR_JRE}},
+	"ifdef_property_jre"            :false,
 	"ifdef_property_jdk"            :{{BUILD_FOR_JDK}}, 
+	"ifdef_keepfiles"				:{{M_KEEPFILES}},	
 	
 	"ifdef_property_language"       :false,
 	"ifdef_property_kill_running"   :true,
@@ -40,7 +42,6 @@
 	"_":"=== some tuning ===",
 	"DEFAULT_TESTING_LOGLEVEL" : "7",
 	"DEFAULT_RELEASE_LOGLEVEL" : "5",
-	"ifdef_PSDETAIL_DEBUG"     : true,
 	
 	"_":""
 }

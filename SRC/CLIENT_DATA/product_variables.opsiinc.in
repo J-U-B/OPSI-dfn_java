@@ -325,14 +325,26 @@ Switch $JavaMajor$
 		{{#ifdef_property_jre}}
 		; this part is not required since we do not deliver jre11
 		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}_windows-x64_bin.exe"
-		Set $MinimumSpace$ 		= "500 MB"
+		Set $MinimumSpace$ 		= "250 MB"
 		{{/ifdef_property_jre}}
 		{{#ifdef_property_jdk}}
 		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
 		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
-		Set $MinimumSpace$ 		= "1200 MB"
+		Set $MinimumSpace$ 		= "600 MB"
 		{{/ifdef_property_jdk}}
 	EndCase	
+	Case "12"
+		{{#ifdef_property_jre}}
+		; this part is not required since we do not deliver jre12
+		Set $JRE_INSTALLER_64$	= "jre-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $MinimumSpace$ 		= "250 MB"
+		{{/ifdef_property_jre}}
+		{{#ifdef_property_jdk}}
+		Set $JDK_INSTALLER_64$	= "jdk-{{JAVA_VER}}_windows-x64_bin.exe"
+		Set $JDK_DOC$			= "jdk-{{JAVA_VER}}_doc-all.zip"
+		Set $MinimumSpace$ 		= "600 MB"
+		{{/ifdef_property_jdk}}
+	EndCase		
 	DefaultCase
 		LogError "Unsupported Java major release: " + $JavaMajor$
 		isFatalError	

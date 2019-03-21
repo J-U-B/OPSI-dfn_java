@@ -195,7 +195,9 @@ entfaellt dieser Abschnitt.
 
 Bei der Installation des Paketes im Depot erfolgt im <code>postinst</code>-Script 
 der Download der Software vom Hersteller (Windows, 32 (sofern vorhanden) und 64 Bit).  
-Ein manueller Download sollte dann nicht erforderlich sein. 
+Ein manueller Download sollte dann nicht erforderlich sein.
+
+Auf dem Depot-Server ist **curl** bzw. **wget** erforderlich.
 
 Das Gesamtvolumen der herunterzuladenden Dateien betraegt je nach Paketvariante
 zwischen **135** und **655 MByte**.
@@ -324,7 +326,8 @@ zuzustimmen.
 > You must accept the [Java SE Development Kit 8 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase8speclicense-2158700.html) to download this software.
 > You must accept the [Java SE Development Kit 9 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase9speclicense-3903847.html)
 > You must accept the [Java SE Development Kit 10 Documentation License Agreement](http://www.oracle.com/technetwork/java/javase/overview/javase10speclicense-4417634.html)
-> You must accept the [Java SE Development Kit 11 Documentation License Agreement](http://download.oracle.com/otndocs/jcp/java_se-11-final-spec/license.html)
+> You must accept the [Java SE Development Kit 11 Documentation License Agreement](https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html)
+> You must accept the [Java SE Development Kit 12 Documentation License Agreement](https://www.oracle.com/technetwork/java/javase/terms/license/javase-license.html)
 Die Installation dieses Paketes setzt voraus, dass der Nutzer dem Folge geleistet
 hat. Sollte den Lizenzbedingungen nicht zugestimmt werden, darf dieses Paket nicht
 verwendet werden.
@@ -411,4 +414,4 @@ Bekannte Fehler:
 
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2018-10-16 07:16:34 +0200
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2019-03-21 08:11:16 +0100

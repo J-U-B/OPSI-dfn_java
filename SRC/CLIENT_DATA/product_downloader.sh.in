@@ -3,8 +3,8 @@
 # Download files from vendor
 # Product: JDK/JRE
 #
-# Version 1.3.2
-# Jens Boettge <boettge@mpi-halle.mpg.de>  2018-11-21 18:06:00 +0100
+# Version 1.4.0
+# Jens Boettge <boettge@mpi-halle.mpg.de>  2019-03-21 08:15:36 +0100
 #=======================================================================
 # download from:
 # 	http://www.oracle.com/technetwork/java/javase/downloads/index.html
@@ -27,10 +27,35 @@ if [ "$ERR" -gt 0 ]; then
 	exit $ERR
 fi
 
-WGET=$(which wget)
-if [ -z "$WGET" ];   then echo "Error: wget not found" ;  exit 200 ; fi
+DOWNLOADER="wget"
+
 MD5EXE=$(which md5sum)
-if [ -z "$MD5EXE" ]; then echo "Error: md5sum not found"; exit 201 ; fi
+if [ -z "$MD5EXE" ]; then echo "Error: md5sum not found"; exit 200 ; fi
+
+if [ "$DOWNLOADER" = "wget" ]; then
+	WGET=$(which wget)
+	# if [ -z "$WGET" ];   then echo "Error: wget not found" ;  exit 201 ; fi
+	if [ -z "$WGET" ];   then
+		echo "Warning: WGET not found; trying CURL" ;  DOWNLOADER="curl" ;
+	else
+		#options for wget:
+		# DL_OPTS="--max-redirect=6 --no-cookies -nv "
+		# especially for Java:
+		DL_OPTS="-nv --progress=bar:force --max-redirect=4 --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\" "
+		DL_OUT="-O"
+	fi
+fi
+
+if [ "$DOWNLOADER" = "curl" ]; then
+	CURL=$(which curl)
+	if [ -z "$CURL" ];   then echo "Error: curl not found" ;  exit 202 ; fi
+	#options for curl:
+	# DL_OPTS="--silent --show-error -L "
+	# especially for Java:
+	DL_OPTS="--silent --show-error -L --header \"Cookie: oraclelicense=accept-securebackup-cookie\" "
+	DL_OUT="-o"
+fi
+
 
 
 if [ -f "${THIS_DIR}/Makefile" ] ; then
@@ -59,7 +84,6 @@ JAVA_BUILD="{{JAVA_BUILD}}"
 HASH="{{HASH}}"
 
 CNT=0
-WGET_OPTS="--progress=bar:force --max-redirect=4 --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\" "
 FS_THRESHOLD=10000
 
 
@@ -110,7 +134,7 @@ download()
         if [ -f "${DEST_DIR}/${PACKAGE}" ]; then
                 echo -e "\tFile already exists"
         else
-                eval wget ${WGET_OPTS} -nv "${DL_URL}" -O "${DEST_DIR}/${PACKAGE}"
+                eval ${DOWNLOADER} ${DL_OPTS} "${DL_URL}" ${DL_OUT} "${DEST_DIR}/${PACKAGE}"
                 if  [ ! -f "${DEST_DIR}/${PACKAGE}" ]; then
                         let "ERR+=1"
                 else
@@ -132,6 +156,7 @@ echo "Downloading required files from vendor"
 echo "Detected version for this package: ${VERSION}"
 echo "Timestamp: $(date +'%Y-%m-%d %H:%M:%S')"
 echo "Targtet directory: ${DEST_DIR}"
+echo "Using downloader: ${DOWNLOADER}"
 echo "=================================================================="
 
 # if [ "{{O_BASE_JAVA}}" = "java8" ]; then
@@ -147,7 +172,7 @@ if [ "${J_RELEASE}" -eq "8" ]; then
 	download ${BASE}/${JAVA_VER}-${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}-docs-all.zip
 	{{/ifdef_property_jdk}}
 
-elif [ "${J_RELEASE}" -eq "9" -o  "${J_RELEASE}" -eq "10" -o "${J_RELEASE}" -eq "11" ]; then	
+elif [ "${J_RELEASE}" -eq "9" -o  "${J_RELEASE}" -eq "10" -o "${J_RELEASE}" -eq "11" -o "${J_RELEASE}" -eq "12" ]; then
 	{{#ifdef_property_jre}}
 	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}_windows-x64_bin.exe
 	# download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jre-${JAVA_VER}_windows-x86_bin.exe
@@ -157,6 +182,9 @@ elif [ "${J_RELEASE}" -eq "9" -o  "${J_RELEASE}" -eq "10" -o "${J_RELEASE}" -eq 
 	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}_windows-x64_bin.exe
 	download ${BASE}/${JAVA_VER}+${JAVA_BUILD}/${HASH}/jdk-${JAVA_VER}_doc-all.zip
 	{{/ifdef_property_jdk}}
+else
+	echo "ERROR: Unsupported Java version"
+	exit 255
 fi
 
 [ "$MODE" = "depot" ] && check_md5  

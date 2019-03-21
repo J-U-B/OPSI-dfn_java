@@ -106,6 +106,11 @@ endif
 
 JAVA_RELEASE := $(shell grep '"JAVA_RELEASE"' $(SPEC) | sed -e 's/^.*\s*:\s*\"\(.*\)\".*$$/\1/' )
 ifeq (11,$(JAVA_RELEASE))
+	# only JDK available
+	override BUILD_FOR_JRE := false
+endif
+ifeq (12,$(JAVA_RELEASE))
+	# only JDK available
 	override BUILD_FOR_JRE := false
 endif
 
