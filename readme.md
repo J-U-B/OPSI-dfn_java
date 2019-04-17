@@ -3,6 +3,8 @@
 ## ToC ##
 
 * [Paketinfo](#paketinfo)
+  * [Oracle Java SE Support Roadmap](#roadmap)
+  * [Update Lizenzbedingungen](#lic_update)
 * [Paket erstellen](#paket_erstellen)
   * [Voraussetzungen](#voraussetzungen)
   * [Makefile und spec.json](#makefile_und_spec)
@@ -50,6 +52,8 @@ Weiterhin wird optional (nur beim JDK) die JDK-Dokumentation installiert.
 Teile dieser Dokumentation beziehen sich nicht ausschliesslich auf die erstellten 
 OSPI-Pakete, sondern beruecksichtigen auch den Build-Prozess.
 
+<div id="roadmap"></div>
+
 ### Oracle Java SE Support Roadmap
 
 **Achtung:** Die [Oracle Java SE Support Roadmap](http://www.oracle.com/technetwork/java/eol-135779.html)
@@ -60,6 +64,13 @@ Oracle fuehrt mit der 18.3 ein neues Namensschema (*YY.M*) ein.
 Auch die Version 18.3  ist eine *short term release*. Die naechste *LTS* ist 
 mit der 18.9 vorgesehen.  
 Java 18.3 wurde als Java 10 veroeffentlicht.
+
+<div id="lic_update"></div>
+
+### Update Lizenzbedingungen
+Mit dem **16.04.2019** haben sich die **Lizenzbedingungen** fuer Oracle Java geandert.  
+Die Versionen ab ***Java 8u211/8u12*** bzw. ***Java 11.0.3*** sind nur noch fuer
+Oracle-Kunden mit **Wartungsvertrag** und entsprechendem **Account** erhaeltlich!
 
 
 
@@ -414,4 +425,4 @@ Bekannte Fehler:
 
 
 -----
-Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2019-03-21 12:35:56 +0100
+Jens Boettge <<boettge@mpi-halle.mpg.de>>, 2019-04-17 08:04:40 +0200
